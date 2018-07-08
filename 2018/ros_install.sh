@@ -7,6 +7,6 @@ rosdep init &&
 rosdep update &&
 echo "source /opt/ros/lunar/setup.bash" >> ~/.bashrc &&
 source ~/.bashrc &&
-apt -y install python-rosinstall python-rosinstall-generator python-wstool build-essential ros-lunar-navigation ros-lunar-viz ros-lunar-gazebo-ros-pkgs ros-lunar-gazebo-ros-control &&
+sudo apt -y install python-rosinstall python-rosinstall-generator python-wstool build-essential ros-lunar-navigation ros-lunar-viz ros-lunar-gazebo-ros-pkgs ros-lunar-gazebo-ros-control &&
 
 echo "All OK!"
