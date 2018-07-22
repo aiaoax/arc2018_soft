@@ -13,7 +13,7 @@ sudo apt -y install python-rosinstall python-rosinstall-generator python-wstool 
 
 echo "source ~/arc_osaka/2018/catkin_ws/devel/setup.bash" >> ~/.bashrc &&
 echo "export ROS_HOSTNAME=127.0.0.1" >> ~/.bashrc &&
-echo "export ROS_MASTER_URI=http://${ROS_HOSTNAME}:11311" >> ~/.bashrc &&
+echo "export ROS_MASTER_URI=http://\${ROS_HOSTNAME}:11311" >> ~/.bashrc &&
 echo "alias cw='cd ~/arc_osaka/2018/catkin_ws'" >> ~/.bashrc &&
 echo "alias cs='cd ~/arc_osaka/2018/catkin_ws/src'" >> ~/.bashrc &&
 echo "alias cm='cd ~/arc_osaka/2018/catkin_ws && catkin_make'" >> ~/.bashrc &&
