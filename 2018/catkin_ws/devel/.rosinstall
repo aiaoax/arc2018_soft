@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/ros/arc_osaka/2018/catkin_ws/devel/setup.sh
