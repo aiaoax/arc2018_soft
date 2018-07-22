@@ -4,7 +4,7 @@ sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C
 sudo apt update &&
 sudo apt -y install ros-lunar-desktop-full &&
 
-rosdep init &&
+sudo rosdep init &&
 rosdep update &&
 echo "source /opt/ros/lunar/setup.bash" >> ~/.bashrc &&
 
@@ -22,6 +22,7 @@ cd &&
 
 git clone https://github.com/aiaoax/arc_osaka.git &&
 
+source ~/.bashrc &&
 echo "All OK!"
 
 #mkdir -p ~/arc_osaka/2018/catkin_ws/src &&
