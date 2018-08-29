@@ -1,0 +1,8 @@
+prefix=/home/ryo/work/ARC/2018/ros/catkin_ws/install
+
+Name: gazebo_dev
+Description: Description of gazebo_dev
+Version: 2.7.6
+Cflags: 
+Libs: -L/home/ryo/work/ARC/2018/ros/catkin_ws/install/lib 
+Requires: 

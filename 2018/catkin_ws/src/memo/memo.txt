@@ -1,0 +1,6 @@
+*RvizでＳｔａｔｕｓエラーが出た時
+rosrun tf static_transform_publisher 0 0 0 0 0 0 1 map base_line 10
+rosrun tf static_transform_publisher 0 0 0 0 0 0 1 base_footprint map 10
+
+*gazeboのロボットをカーソルで動かす
+rosrun turtlesim turtle_teleop_key /turtle1/cmd_vel:=/my_robo/diff_drive_controller/cmd_vel
