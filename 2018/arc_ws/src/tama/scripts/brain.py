@@ -9,6 +9,10 @@ import rospy
 from tama.msg import arm
 from tama.msg import foot 
 
+#定数などの定義ファイルimport
+from param import Direction
+from param import Speed
+
 def brain_py():
     # 初期化宣言 : このソフトウェアは"para_in"という名前
     rospy.init_node('brain_py_node', anonymous=True)
@@ -34,6 +38,9 @@ def brain_py():
 
         msg_arm.frameID = frameID
         msg_foot.frameID = frameID
+        msg_foot.direction = int(Direction.RIGHT)
+        msg_foot.speed = int(Speed.LOW)
+        
         # publishする関数
         pub_arm.publish(msg_arm)
         pub_foot.publish(msg_foot)
