@@ -14,10 +14,10 @@ pi = pigpio.pi()
 pi.set_mode(pwm_pin, pigpio.OUTPUT)
 
 def callback(foot):
-    duty = ((foot.frameID + 90.) / 180. * 1.9 + 0.5)\
+    duty = ((foot.frame_id + 90.) / 180. * 1.9 + 0.5)\
             / 20. * 1e6
     pi.hardware_PWM(pwm_pin, 50, int(0))
-    print("frameID = %d" % foot.frameID)
+    print("frame_id = %d" % foot.frame_id)
     print("direction = %d" % foot.direction)
     print("speed = %d" % foot.speed)
     print"==============="

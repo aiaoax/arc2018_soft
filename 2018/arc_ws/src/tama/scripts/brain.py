@@ -25,7 +25,7 @@ def brain_py():
     # 1秒間にpublishする数の設定
     r = rospy.Rate(5)
 
-    frameID = 0
+    frame_id = 0
 
     # Adder型のmessageのインスタンスを作る
     msg_arm = arm()
@@ -36,15 +36,15 @@ def brain_py():
     
     while not rospy.is_shutdown():
 
-        msg_arm.frameID = frameID
-        msg_foot.frameID = frameID
+        msg_arm.frame_id = frame_id
+        msg_foot.frame_id = frame_id
         msg_foot.direction = int(Direction.RIGHT)
         msg_foot.speed = int(Speed.LOW)
         
         # publishする関数
         pub_arm.publish(msg_arm)
         pub_foot.publish(msg_foot)
-        frameID += 1
+        frame_id += 1
 
         r.sleep()
 

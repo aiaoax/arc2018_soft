@@ -1,4 +1,4 @@
-int32 frameID
+int32 frame_id
 bool strike 
 bool grub 
 bool store
