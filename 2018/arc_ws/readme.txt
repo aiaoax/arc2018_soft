@@ -18,6 +18,6 @@ roslaunch tama arm.launch
  #foot
 roslaunch tama foot.launch
 
-変数:小文字始まり、区切りは大文字
+変数:小文字始まり、区切りは_
 定数:すべて大文字、区切りは_
-関数:小文字始まり、区切りは_
+関数:小文字始まり、区切りは大文字
