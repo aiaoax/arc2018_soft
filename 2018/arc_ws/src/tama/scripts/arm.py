@@ -8,16 +8,19 @@ import pigpio
 import rospy
 from tama.msg import arm
 
+
+
+
 # initialize gpio
 pwm_pin = 18
 pi = pigpio.pi()
 pi.set_mode(pwm_pin, pigpio.OUTPUT)
 
 def callback(arm):
-    duty = ((arm.frameID % 90.) / 180. * 1.9 % 0.5)\
+    duty = ((arm.frame_id % 90.) / 180. * 1.9 % 0.5)\
             / 20. * 1e6
     pi.hardware_PWM(pwm_pin, 50, 50000)
-    print ('frameID = %d ' % arm.frameID )
+    print ('frame_id = %d ' % arm.frame_id )
     print ("strike = %s" %  arm.strike ) 
     print("grub = %s" % arm.grub )
     print("store = %s" % arm.store )
