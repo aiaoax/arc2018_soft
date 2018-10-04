@@ -8,8 +8,14 @@ class Direction(IntEnum):
     BACK  = 2
     RIGHT = 3
     LEFT  = 4
+    STOP  = 5
 
 class Speed(IntEnum):
     LOW    = 1 
     MIDDLE = 2
-    HILH   = 3
+    HIGH   = 3
+
+class Arm(IntEnum):
+    PLUS  = 1
+    NONE  = 2
+    MINUS = 3
