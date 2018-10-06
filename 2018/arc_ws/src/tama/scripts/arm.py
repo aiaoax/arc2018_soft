@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Reference:https://karaage.hatenadiary.jp/entry/2017/02/10/073000
 Summery: Move servo angle to the topic value 'servo_angle'
@@ -7,6 +8,7 @@ Summery: Move servo angle to the topic value 'servo_angle'
 import pigpio
 import rospy
 from tama.msg import arm
+from param import Arm
 
 # defined const
 
@@ -22,6 +24,8 @@ CW_SARVO2 = 180
 CCW_SARVO1 = 1000
 CCW_SARVO2 = 0
 
+HIGH = 1
+LOW = 0
 
 # initialize gpio
 pi = pigpio.pi()
@@ -34,8 +38,8 @@ def callback(arm):
     duty = ((arm.frame_id % 90.) / 180. * 1.9 % 0.5)\
             / 20. * 1e6
     #pi.hardware_PWM(pwm_pin, 50, 50000)
-    print ('frame_id = %d ' % arm.frame_id )
-    print ("strike = %s" %  arm.strike )
+    print('frame_id = %d ' % arm.frame_id )
+    print("strike = %s" %  arm.strike )
     print("grub = %s" % arm.grub )
     print("store = %s" % arm.store )
     print("home = %s" % arm.home )
@@ -44,17 +48,56 @@ def callback(arm):
     print("release = %s" % arm.release)
     print("=============")
     
+    #叩く
     if arm.strike:
-        pi.write(PIN_INCW,1)
+        pi.write(PIN_INCW,HIGH)
     else:
-        pi.write(PIN_INCW,0)
+        pi.write(PIN_INCW,LOW)
     
+    #掴む/離す
     if arm.grub:
         pi.set_servo_pulsewidth(PIN_SARVO1, CW_SARVO1)
     else:
         pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
     
+    #格納
+    if arm.store:
+        pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
+        pi.set_servo_pulsewidth(PIN_SARVO2, CCW_SARVO2)
+    else:
+        pass #何もしない
     
+    #ホームに戻す
+    if arm.home:
+        pass #ダミー
+    else:
+        pass #何もしない
+
+    #アームチルト
+    if arm.tilt == Arm.PLUS:
+        pi.set_servo_pulsewidth(PIN_SARVO2, CW_SARVO2)
+    elif arm.tilt == Arm.MINUS:
+        pi.set_servo_pulsewidth(PIN_SARVO2, CCW_SARVO2)
+    else:
+        pass
+
+    #ベース
+    if arm.updown == Arm.PLUS:
+        pi.write(PIN_INCW,HIGH)
+        pi.write(PIN_INCCW,LOW)
+    elif arm.tilt == Arm.MINUS:
+        pi.write(PIN_INCW,LOW)
+        pi.write(PIN_INCCW,HIGH)
+    else:
+        pi.write(PIN_INCW,HIGH)
+        pi.write(PIN_INCCW,HIGH)
+    
+    #解放
+    if arm.release:
+        pass #ダミー
+    else:
+        pass #何もしない
+
 
 
 
