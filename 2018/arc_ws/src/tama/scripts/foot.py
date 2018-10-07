@@ -13,16 +13,16 @@ from param import Speed
 # defined const
 
 # pin number
-PIN_AIN1    = 25    # Left IN1
-PIN_AIN2    = 24    # Left IN2
-PIN_PWMA    = 23    # Left PWM
-PIN_BIN1    = 28    # Right IN1
-PIN_BIN2    = 27    # Right IN2
-PIN_PWMB    = 26    # Right PWM
+PIN_AIN1    = 26    # GPIO.25 Left IN1
+PIN_AIN2    = 19    # GPIO.24 Left IN2
+PIN_PWMA    = 13    # GPIO.23 Left PWM
+PIN_BIN1    = 20    # GPIO.28 Right IN1
+PIN_BIN2    = 16    # GPIO.27 Right IN2
+PIN_PWMB    = 12    # GPIO.26 Right PWM
 
-HIGHSPD     = 90    # 速度：高
-MEDIUMSPD   = 60    # 速度：中
-LOWSPD      = 30    # 速度：低
+HIGHSPD     = 255   # 速度：高
+MEDIUMSPD   = 192   # 速度：中
+LOWSPD      = 128   # 速度：低
 
 HIGH        = 1     # 定数
 LOW         = 0     # 定数
@@ -49,62 +49,51 @@ def callback(foot):
     #方向制御
     #前進
     if foot.direction == Direction.AHEAD:
-        #Left Motor : CCW
-        pi.write(PIN_AIN1,LOW)
-        pi.write(PIN_AIN2,HIGH)
-        #Right Motor : CW
-        pi.write(PIN_BIN1,HIGH)
-        pi.write(PIN_BIN2,LOW)
+        output_direction(LOW, HIGH, HIGH, LOW)      # Left Motor : CCW, Right Motor : CW
 
     #後進
     elif foot.direction == Direction.BACK:
-        #Left Motor : CW
-        pi.write(PIN_AIN1,HIGH)
-        pi.write(PIN_AIN2,LOW)
-        #Right Motor : CCW
-        pi.write(PIN_BIN1,LOW)
-        pi.write(PIN_BIN2,HIGH)
+        output_direction(HIGH, LOW, LOW, HIGH)      # Left Motor : CW, Right Motor : CCW
 
     #右旋回
     elif foot.direction == Direction.RIGHT:
-        #Left Motor : CCW
-        pi.write(PIN_AIN1,LOW)
-        pi.write(PIN_AIN2,HIGH)
-        #Right Motor : CCW
-        pi.write(PIN_BIN1,LOW)
-        pi.write(PIN_BIN2,HIGH)
+        output_direction(LOW, HIGH, LOW, HIGH)      # Left Motor : CCW, Right Motor : CCW
 
     #左旋回
     elif foot.direction == Direction.LEFT:
-        #Left Motor : CW
-        pi.write(PIN_AIN1,HIGH)
-        pi.write(PIN_AIN2,LOW)
-        #Right Motor : CW
-        pi.write(PIN_BIN1,HIGH)
-        pi.write(PIN_BIN2,LOW)
+        output_direction(HIGH, LOW, HIGH, LOW)      # Left Motor : CW, Right Motor : CW
 
     #停止
     elif foot.direction == Direction.STOP:
-        pass
+        output_direction(HIGH, HIGH, HIGH, HIGH)    # Left Motor : ShortBreak, Right Motor : ShortBreak
     else:
         pass
 
 
     #速度制御
     if foot.speed == Speed.HIGH:
-        pi.write(PIN_PWMA,HIGHSPD)
-        pi.write(PIN_PWMB,HIGHSPD)
+        output_pwm(HIGHSPD)         # 速度：高
 
     elif foot.speed == Speed.MIDDLE:
-        pi.write(PIN_PWMA,MEDIUMSPD)
-        pi.write(PIN_PWMB,MEDIUMSPD)
+        output_pwm(MEDIUMSPD)       # 速度：中
 
     elif foot.speed == Speed.LOW:
-        pi.write(PIN_PWMA,LOWSPD)
-        pi.write(PIN_PWMB,LOWSPD)
+        output_pwm(LOWSPD)          # 速度：低
 
     else:
         pass
+
+def output_pwm(SPD):                        # PWM Duty比
+    pi.set_PWM_dutycycle(PIN_PWMA, SPD)
+    pi.set_PWM_dutycycle(PIN_PWMB, SPD)
+
+def output_direction(AIN1, AIN2, BIN1, BIN2):   # 方向
+    #Left Motor
+    pi.write(PIN_AIN1,AIN1)
+    pi.write(PIN_AIN2,AIN2)
+    #Right Motor
+    pi.write(PIN_BIN1,BIN1)
+    pi.write(PIN_BIN2,BIN2)
 
 def foot_py():
     rospy.init_node('foot_py_node',anonymous=True)
