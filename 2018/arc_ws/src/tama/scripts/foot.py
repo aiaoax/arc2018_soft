@@ -20,9 +20,9 @@ PIN_BIN1    = 20    # GPIO.28 Right IN1
 PIN_BIN2    = 16    # GPIO.27 Right IN2
 PIN_PWMB    = 12    # GPIO.26 Right PWM
 
-HIGHSPD     = 255   # 速度：高
-MEDIUMSPD   = 192   # 速度：中
-LOWSPD      = 128   # 速度：低
+HIGH_SPD     = 255   # 速度：高, 値の範囲：0-255
+MEDIUM_SPD   = 192   # 速度：中, 値の範囲：0-255
+LOW_SPD      = 128   # 速度：低, 値の範囲：0-255
 
 HIGH        = 1     # 定数
 LOW         = 0     # 定数
@@ -49,45 +49,53 @@ def callback(foot):
     #方向制御
     #前進
     if foot.direction == Direction.AHEAD:
-        output_direction(LOW, HIGH, HIGH, LOW)      # Left Motor : CCW, Right Motor : CW
+        outputDirection(LOW, HIGH, HIGH, LOW)      # Left Motor : CCW, Right Motor : CW
+    else:
+        pass
 
     #後進
-    elif foot.direction == Direction.BACK:
-        output_direction(HIGH, LOW, LOW, HIGH)      # Left Motor : CW, Right Motor : CCW
+    if foot.direction == Direction.BACK:
+        outputDirection(HIGH, LOW, LOW, HIGH)      # Left Motor : CW, Right Motor : CCW
+    else:
+        pass
 
     #右旋回
-    elif foot.direction == Direction.RIGHT:
-        output_direction(LOW, HIGH, LOW, HIGH)      # Left Motor : CCW, Right Motor : CCW
+    if foot.direction == Direction.RIGHT:
+        outputDirection(LOW, HIGH, LOW, HIGH)      # Left Motor : CCW, Right Motor : CCW
+    else:
+        pass
 
     #左旋回
-    elif foot.direction == Direction.LEFT:
-        output_direction(HIGH, LOW, HIGH, LOW)      # Left Motor : CW, Right Motor : CW
+    if foot.direction == Direction.LEFT:
+        outputDirection(HIGH, LOW, HIGH, LOW)      # Left Motor : CW, Right Motor : CW
+    else:
+        pass
 
     #停止
-    elif foot.direction == Direction.STOP:
-        output_direction(HIGH, HIGH, HIGH, HIGH)    # Left Motor : ShortBreak, Right Motor : ShortBreak
+    if foot.direction == Direction.STOP:
+        outputDirection(HIGH, HIGH, HIGH, HIGH)    # Left Motor : ShortBreak, Right Motor : ShortBreak
     else:
         pass
 
 
     #速度制御
     if foot.speed == Speed.HIGH:
-        output_pwm(HIGHSPD)         # 速度：高
+        outputPwm(HIGH_SPD)         # 速度：高
 
     elif foot.speed == Speed.MIDDLE:
-        output_pwm(MEDIUMSPD)       # 速度：中
+        outputPwm(MEDIUM_SPD)       # 速度：中
 
     elif foot.speed == Speed.LOW:
-        output_pwm(LOWSPD)          # 速度：低
+        outputPwm(LOW_SPD)          # 速度：低
 
     else:
         pass
 
-def output_pwm(SPD):                        # PWM Duty比
+def outputPwm(SPD):                        # PWM Duty比
     pi.set_PWM_dutycycle(PIN_PWMA, SPD)
     pi.set_PWM_dutycycle(PIN_PWMB, SPD)
 
-def output_direction(AIN1, AIN2, BIN1, BIN2):   # 方向
+def outputDirection(AIN1, AIN2, BIN1, BIN2):   # 方向
     #Left Motor
     pi.write(PIN_AIN1,AIN1)
     pi.write(PIN_AIN2,AIN2)
