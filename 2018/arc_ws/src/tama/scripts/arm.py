@@ -20,9 +20,9 @@ PIN_INCCW = 18
 
 
 CW_SARVO1 = 1500
-CW_SARVO2 = 180
+CW_SARVO2 = 1500
 CCW_SARVO1 = 1000
-CCW_SARVO2 = 0
+CCW_SARVO2 = 1000
 
 HIGH = 1
 LOW = 0
@@ -39,67 +39,88 @@ def callback(arm):
             / 20. * 1e6
     #pi.hardware_PWM(pwm_pin, 50, 50000)
     print('frame_id = %d ' % arm.frame_id )
-    print("strike = %s" %  arm.strike )
-    print("grub = %s" % arm.grub )
-    print("store = %s" % arm.store )
-    print("home = %s" % arm.home )
-    print("tilt = %s" % arm.tilt )
-    print("updown = %s" % arm.updown )
-    print("release = %s" % arm.release)
-    print("=============")
     
     #叩く
-    if arm.strike:
+    strikeMotion(arm.strike)
+    
+    #掴む/離す
+    grubMotion(arm.grub)
+    
+    #格納
+    storeMotion(arm.store)
+    
+    #ホームに戻す
+    homeMotion(arm.home)
+    
+    #アームチルト
+    tiltMotion(arm.tilt)
+
+    #ベース
+    baseMotion(arm.updown)
+
+    #解放
+    releaseMotion(arm.release)
+
+    print("=============")
+
+
+def strikeMotion(strike):
+    print("strike = %s" %  arm.strike)
+    if strike:
         pi.write(PIN_INCW,HIGH)
     else:
         pi.write(PIN_INCW,LOW)
     
-    #掴む/離す
+
+def grubMotion(grub):
+    print("grub = %s" % arm.grub)
     if arm.grub:
         pi.set_servo_pulsewidth(PIN_SARVO1, CW_SARVO1)
     else:
         pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
-    
-    #格納
-    if arm.store:
+
+def storeMotion(store):
+    print("store = %s" % arm.store)
+    if store:
         pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
         pi.set_servo_pulsewidth(PIN_SARVO2, CCW_SARVO2)
     else:
         pass #何もしない
-    
-    #ホームに戻す
-    if arm.home:
+
+def homeMotion(home):
+    print("home = %s" % arm.home)
+    if home:
         pass #ダミー
     else:
         pass #何もしない
 
-    #アームチルト
-    if arm.tilt == Arm.PLUS:
+def tiltMotion(tilt):
+    print("tilt = %s" % arm.tilt)
+    if tilt == Arm.PLUS:
         pi.set_servo_pulsewidth(PIN_SARVO2, CW_SARVO2)
-    elif arm.tilt == Arm.MINUS:
+    elif tilt == Arm.MINUS:
         pi.set_servo_pulsewidth(PIN_SARVO2, CCW_SARVO2)
     else:
         pass
 
-    #ベース
-    if arm.updown == Arm.PLUS:
+def baseMotion(updown):
+    print("updown = %s" % arm.updown)
+    if updown == Arm.PLUS:
         pi.write(PIN_INCW,HIGH)
         pi.write(PIN_INCCW,LOW)
-    elif arm.tilt == Arm.MINUS:
+    elif updown == Arm.MINUS:
         pi.write(PIN_INCW,LOW)
         pi.write(PIN_INCCW,HIGH)
     else:
         pi.write(PIN_INCW,HIGH)
         pi.write(PIN_INCCW,HIGH)
-    
-    #解放
-    if arm.release:
+
+def releaseMotion(release):
+    print("release = %s" % arm.release)
+    if release:
         pass #ダミー
     else:
         pass #何もしない
-
-
-
 
 def arm_py():
     rospy.init_node('arm_py_node',anonymous=True)
