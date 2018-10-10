@@ -76,20 +76,20 @@ def callback(foot):
     if foot.speed == Speed.HIGH:
         if foot.direction == Direction.AHEAD or foot.direction == Direction.BACK:
             outputPwm(HIGH_SPD)         # 速度：高
-		else:
-		    outputPwm(HIGH_TURN)        # 旋回速度：高
+        else:
+            outputPwm(HIGH_TURN)        # 旋回速度：高
 
     elif foot.speed == Speed.MIDDLE:
 	    if foot.direction == Direction.AHEAD or foot.direction == Direction.BACK:
             outputPwm(MIDDLE_SPD)       # 速度：中
-		else:
-		    outputPwm(MIDDLE_TURN)      # 旋回速度：中
+        else:
+            outputPwm(MIDDLE_TURN)      # 旋回速度：中
 
     elif foot.speed == Speed.LOW:
         if foot.direction == Direction.AHEAD or foot.direction == Direction.BACK:
             outputPwm(LOW_SPD)          # 速度：低
-		else:
-		    outputPwm(LOW_TURN)         # 旋回速度：低
+        else:
+            outputPwm(LOW_TURN)         # 旋回速度：低
 
     else:
         pass
