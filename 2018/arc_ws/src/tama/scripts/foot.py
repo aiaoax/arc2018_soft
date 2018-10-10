@@ -20,9 +20,13 @@ PIN_BIN1    = 20    # GPIO.28 Right IN1
 PIN_BIN2    = 16    # GPIO.27 Right IN2
 PIN_PWMB    = 12    # GPIO.26 Right PWM
 
-HIGH_SPD    = 255   # 速度：高, 値の範囲：0-255
-MEDIUM_SPD  = 192   # 速度：中, 値の範囲：0-255
-LOW_SPD     = 128   # 速度：低, 値の範囲：0-255
+HIGH_SPD    = 200   # 速度：高, 値の範囲：0-255
+MIDDLE_SPD  = 170   # 速度：中, 値の範囲：0-255
+LOW_SPD     = 120   # 速度：低, 値の範囲：0-255
+
+HIGH_TURN   = 120   # 旋回速度：高, 値の範囲：0-255
+MIDDLE_TURN = 90    # 旋回速度：中, 値の範囲：0-255
+LOW_TURN    = 60    # 旋回速度：低, 値の範囲：0-255
 
 HIGH        = 1     # 定数
 LOW         = 0     # 定数
@@ -50,43 +54,42 @@ def callback(foot):
     #前進
     if foot.direction == Direction.AHEAD:
         outputDirection(LOW, HIGH, HIGH, LOW)   # Left Motor : CCW, Right Motor : CW
-    else:
-        pass
 
     #後進
-    if foot.direction == Direction.BACK:
+    elif foot.direction == Direction.BACK:
         outputDirection(HIGH, LOW, LOW, HIGH)   # Left Motor : CW, Right Motor : CCW
-    else:
-        pass
 
     #右旋回
-    if foot.direction == Direction.RIGHT:
+    elif foot.direction == Direction.RIGHT:
         outputDirection(LOW, HIGH, LOW, HIGH)   # Left Motor : CCW, Right Motor : CCW
-    else:
-        pass
 
     #左旋回
-    if foot.direction == Direction.LEFT:
+    elif foot.direction == Direction.LEFT:
         outputDirection(HIGH, LOW, HIGH, LOW)   # Left Motor : CW, Right Motor : CW
-    else:
-        pass
 
     #停止
-    if foot.direction == Direction.STOP:
+    elif foot.direction == Direction.STOP:
         outputDirection(HIGH, HIGH, HIGH, HIGH) # Left Motor : ShortBreak, Right Motor : ShortBreak
-    else:
-        pass
 
 
     #速度制御
     if foot.speed == Speed.HIGH:
-        outputPwm(HIGH_SPD)         # 速度：高
+        if foot.direction == Direction.AHEAD or foot.direction == Direction.BACK:
+            outputPwm(HIGH_SPD)         # 速度：高
+		else:
+		    outputPwm(HIGH_TURN)        # 旋回速度：高
 
     elif foot.speed == Speed.MIDDLE:
-        outputPwm(MEDIUM_SPD)       # 速度：中
+	    if foot.direction == Direction.AHEAD or foot.direction == Direction.BACK:
+            outputPwm(MIDDLE_SPD)       # 速度：中
+		else:
+		    outputPwm(MIDDLE_TURN)      # 旋回速度：中
 
     elif foot.speed == Speed.LOW:
-        outputPwm(LOW_SPD)          # 速度：低
+        if foot.direction == Direction.AHEAD or foot.direction == Direction.BACK:
+            outputPwm(LOW_SPD)          # 速度：低
+		else:
+		    outputPwm(LOW_TURN)         # 旋回速度：低
 
     else:
         pass
