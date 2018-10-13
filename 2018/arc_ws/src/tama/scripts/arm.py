@@ -24,6 +24,10 @@ CW_SARVO2 = 1500
 CCW_SARVO1 = 1000
 CCW_SARVO2 = 1000
 
+SOFTPWM_MAX = 255
+SOFTPWM_1_3 = 3 / SOFTPWM_MAX
+SOFTPWM_OFF = 0
+
 HIGH = 1
 LOW = 0
 
@@ -65,46 +69,53 @@ def callback(arm):
 
 
 def strikeMotion(strike):
-    print("strike = %s" %  arm.strike)
     if strike:
-        pi.write(PIN_INCW,HIGH)
+        pwm_duty = SOFTPWM_1_3
+        
     else:
-        pi.write(PIN_INCW,LOW)
+        pwm_duty = SOFTPWM_OFF
+    
+    pi.set_PWM_dutycycle(PIN_INCW,pwm_duty) # PWM off
+    print("strike = %s PWM = %d" %  (strike,pwm_duty))
     
 
 def grubMotion(grub):
-    print("grub = %s" % arm.grub)
-    if arm.grub:
-        pi.set_servo_pulsewidth(PIN_SARVO1, CW_SARVO1)
+    if grub:
+        pwm_width = CW_SARVO1
     else:
-        pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
+        pwm_width = CCW_SARVO1
+    
+    pi.set_servo_pulsewidth(PIN_SARVO1, pwm_width)
+    print("grub = %s PWM = %f" % (grub,pwm_width))
 
 def storeMotion(store):
-    print("store = %s" % arm.store)
     if store:
         pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
         pi.set_servo_pulsewidth(PIN_SARVO2, CCW_SARVO2)
     else:
         pass #何もしない
+        
+    print("store = %s" % store)
 
 def homeMotion(home):
-    print("home = %s" % arm.home)
     if home:
         pass #ダミー
     else:
         pass #何もしない
+        
+    print("home = %s" % home)
 
 def tiltMotion(tilt):
-    print("tilt = %s" % arm.tilt)
     if tilt == Arm.PLUS:
         pi.set_servo_pulsewidth(PIN_SARVO2, CW_SARVO2)
     elif tilt == Arm.MINUS:
         pi.set_servo_pulsewidth(PIN_SARVO2, CCW_SARVO2)
     else:
         pass
+        
+    print("tilt = %s" % tilt)
 
 def baseMotion(updown):
-    print("updown = %s" % arm.updown)
     if updown == Arm.PLUS:
         pi.write(PIN_INCW,HIGH)
         pi.write(PIN_INCCW,LOW)
@@ -114,13 +125,16 @@ def baseMotion(updown):
     else:
         pi.write(PIN_INCW,HIGH)
         pi.write(PIN_INCCW,HIGH)
+        
+    print("updown = %s" % updown)
 
 def releaseMotion(release):
-    print("release = %s" % arm.release)
     if release:
         pass #ダミー
     else:
         pass #何もしない
+        
+    print("release = %s" % release)
 
 def arm_py():
     rospy.init_node('arm_py_node',anonymous=True)
