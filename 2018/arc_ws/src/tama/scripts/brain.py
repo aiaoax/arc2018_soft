@@ -5,6 +5,9 @@
 # pythonでROSのソフトウェアを記述するときにimportするモジュール
 import rospy
 
+# gpio制御用
+import pigpio
+
 # 自分で定義したmessageファイルから生成されたモジュール
 from tama.msg import arm
 from tama.msg import foot 
@@ -58,6 +61,17 @@ BOADER_TILT       = 0.2
 MAX = 1
 MIN = -1
 
+#
+PIN_ENCODE1       = 5
+PIN_ENCODE2       = 1
+
+# initialize gpio
+pi = pigpio.pi()
+pi.set_mode(PIN_ENCODE1, pigpio.INPUT)
+pi.set_mode(PIN_ENCODE2, pigpio.INPUT)
+
+
+
 class Brain(object):
     def __init__(self):
         self.operation = []
@@ -86,6 +100,9 @@ class Brain(object):
         self.msg_foot.speed     = Speed.LOW
 
     def convert(self):
+        
+        print(self.operation)
+
         # arm
         self.msg_arm.strike = bool(self.operation[INDEX_STRIKE])
         self.msg_arm.home = bool(self.operation[INDEX_HOME])
@@ -154,7 +171,19 @@ class Brain(object):
             for i ,item in enumerate(self.operation):
                 print str(i) + "=" + str(self.operation[i])
 
-
+class RotaryEncoder(object):
+    def __init__(self):
+        self.cur_param = 0 
+        self.pre_param = 0
+        self.xxx_param
+    def listen(self):
+        self.pre_param = cur_param
+        self.cur_param = (pi.read(PIN_ROTARY_ENCODEA) << 1)
+        self.cur_param += pi.read(PIN_ROTARY_ENCODEB)
+        
+        
+    def direction(self):
+    
 def brain_py():
     # 初期化宣言 : このソフトウェアは"brain_py_node"という名前
     rospy.init_node('brain_py_node', anonymous=True)
@@ -168,6 +197,9 @@ def brain_py():
     while not rospy.is_shutdown():
         # publishする関数
         brain.transmit()
+        #
+        print "PIN1" + str(pi.read(PIN_ENCODE1))
+        print "PIN2" + str(pi.read(PIN_ENCODE2))
         r.sleep()
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 <launch>
-  <group ns="tama1">
+  <group ns="tama2">
     <node pkg="joy" name="joy" type="joy_node"/>
     <node pkg="tama" name="brain" type="brain.py" output="screen"/>
   </group>
