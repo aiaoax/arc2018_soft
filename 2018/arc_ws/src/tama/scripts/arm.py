@@ -28,9 +28,8 @@ PLUS_SERVO2 = 2
 MINUS_SERVO2 = -2
 
 SOFTPWM_MAX = 255
-SOFTPWM_1_3 = 3 / SOFTPWM_MAX
+SOFTPWM_1_3 = (1 / 3) * SOFTPWM_MAX
 SOFTPWM_OFF = 0
-
 
 HIGH = 1
 LOW = 0
@@ -80,9 +79,11 @@ class ArmClass():
 
     def strikeMotion(self,strike):
         if strike:
+            #ハンマーを振る
             pwm_duty = SOFTPWM_1_3
             
         else:
+            #ハンマーを止める
             pwm_duty = SOFTPWM_OFF
         
         pi.set_PWM_dutycycle(PIN_INCW,pwm_duty) # PWM off
@@ -92,8 +93,10 @@ class ArmClass():
     def grubMotion(self,grub):
         
         if grub:
+            #掴む
             pwm_width = CW_SARVO1
         else:
+            #離す
             pwm_width = CCW_SARVO1
         
         pi.set_servo_pulsewidth(PIN_SARVO1, pwm_width)
@@ -101,6 +104,7 @@ class ArmClass():
 
     def storeMotion(self,store):
         if store:
+            #
             pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
             pi.set_servo_pulsewidth(PIN_SARVO2, CCW_SARVO2)
         else:
@@ -119,8 +123,10 @@ class ArmClass():
     def tiltMotion(self,tilt):
         global tilt_pulse_width
         if (tilt == Arm.PLUS) and (tilt_pulse_width < CW_SARVO2):
+            #手首を上向きに
             tilt_pulse_width += PLUS_SERVO2
         elif (tilt == Arm.MINUS) and (tilt_pulse_width > CCW_SARVO2):
+            #手首を下向きに
             tilt_pulse_width += MINUS_SERVO2
         else:
             pass
@@ -129,13 +135,16 @@ class ArmClass():
         print("tilt = %s\t\tWidth = %d" % (tilt,tilt_pulse_width))
 
     def baseMotion(self,updown):
-        if updown == Arm.PLUS:
+        if (updown == Arm.PLUS):
+            #ベース位置を上へ
             pi.write(PIN_INCW,HIGH)
             pi.write(PIN_INCCW,LOW)
-        elif updown == Arm.MINUS:
+        elif (updown == Arm.MINUS):
+            #ベース位置を下へ
             pi.write(PIN_INCW,LOW)
             pi.write(PIN_INCCW,HIGH)
         else:
+            #ベース位置を固定
             pi.write(PIN_INCW,HIGH)
             pi.write(PIN_INCCW,HIGH)
             
@@ -143,6 +152,8 @@ class ArmClass():
 
     def releaseMotion(self,release):
         if release:
+            #手首を一番上向きに
+            #離す
             pass #ダミー
         else:
             pass #何もしない
