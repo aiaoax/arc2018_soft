@@ -86,7 +86,7 @@ class ArmClass():
             #ハンマーを止める
             pwm_duty = SOFTPWM_OFF
         
-        pi.set_PWM_dutycycle(PIN_INCW,pwm_duty) # PWM off
+        pi.set_PWM_dutycycle(PIN_INCW,pwm_duty)
         print("strike = %s\t\tPWM = %d" %  (strike,pwm_duty))
         
 
@@ -103,8 +103,8 @@ class ArmClass():
         print("grub = %s\t\tPWM = %f" % (grub,pwm_width))
 
     def storeMotion(self,store):
+        #[格納]ってそもそも必要なの？
         if store:
-            #
             pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
             pi.set_servo_pulsewidth(PIN_SARVO2, CCW_SARVO2)
         else:
@@ -114,6 +114,8 @@ class ArmClass():
 
     def homeMotion(self,home):
         if home:
+            # ベースを一番上に
+            # ...するらしい
             pass #ダミー
         else:
             pass #何もしない
@@ -129,35 +131,43 @@ class ArmClass():
             #手首を下向きに
             tilt_pulse_width += MINUS_SERVO2
         else:
-            pass
+            pass #止める
             
         pi.set_servo_pulsewidth(PIN_SARVO2, tilt_pulse_width)
         print("tilt = %s\t\tWidth = %d" % (tilt,tilt_pulse_width))
 
     def baseMotion(self,updown):
+        pwm_duty_cw = SOFTPWM_MAX
+        pwm_duty_ccw = SOFTPWM_MAX
+        
         if (updown == Arm.PLUS):
             #ベース位置を上へ
-            pi.write(PIN_INCW,HIGH)
-            pi.write(PIN_INCCW,LOW)
+            pwm_duty_ccw = SOFTPWM_OFF
         elif (updown == Arm.MINUS):
             #ベース位置を下へ
-            pi.write(PIN_INCW,LOW)
-            pi.write(PIN_INCCW,HIGH)
+            pwm_duty_cw = SOFTPWM_OFF
         else:
             #ベース位置を固定
-            pi.write(PIN_INCW,HIGH)
-            pi.write(PIN_INCCW,HIGH)
-            
-        print("updown = %s" % updown)
+            pass #何もしない
+
+        pi.set_PWM_dutycycle(PIN_INCW,pwm_duty_cw)
+        pi.set_PWM_dutycycle(PIN_INCCW,pwm_duty_ccw)
+        
+        print("updown = %s cw:%d ccw:%d" % (updown,pwm_duty_cw,pwm_duty_ccw))
 
     def releaseMotion(self,release):
         if release:
+            #ベースを一番下に
+            #...するのかな？
+
             #手首を一番上向きに
+            pi.set_servo_pulsewidth(PIN_SARVO2, PLUS_SERVO2)
             #離す
-            pass #ダミー
+            pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
+
         else:
             pass #何もしない
-            
+        
         print("release = %s" % release)
 
 def arm_py():
