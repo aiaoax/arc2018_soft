@@ -13,22 +13,22 @@ from param import Speed
 # defined const
 
 # pin number
-PIN_AIN1    = 20#19    # GPIO.24 Left IN1
+PIN_AIN1    = 20#19 # GPIO.24 Left IN1
 PIN_AIN2    = 16    # GPIO.27 Left IN2 
 PIN_PWMA    = 12    # GPIO.26 Left PWM
 PIN_BIN1    = 26    # GPIO.25 Right IN1
-PIN_BIN2    = 19#20    # GPIO.28 Right IN2
+PIN_BIN2    = 19#20 # GPIO.28 Right IN2
 PIN_PWMB    = 13    # GPIO.23 Right PWM
 
-HIGH_SPD    = 250   # 速度：高, 値の範囲：0-255
-MIDDLE_SPD  = 150   # 速度：中, 値の範囲：0-255
-LOW_SPD     = 120   # 速度：低, 値の範囲：0-255
+HIGH_SPD    = 100   # 速度：高, 値の範囲：0~100%
+MIDDLE_SPD  = 75   # 速度：中, 値の範囲：0~100%
+LOW_SPD     = 50   # 速度：低, 値の範囲：0~100%
 
-HIGH_TURN   = 250   # 旋回速度：高, 値の範囲：0-255
-MIDDLE_TURN = 150    # 旋回速度：中, 値の範囲：0-255
-LOW_TURN    = 120    # 旋回速度：低, 値の範囲：0-255
+HIGH_TURN   = 75   # 旋回速度：高, 値の範囲：0~100%
+MIDDLE_TURN = 60   # 旋回速度：中, 値の範囲：0~100%
+LOW_TURN    = 35   # 旋回速度：低, 値の範囲：0~100%
 
-RIGHT_FIGURE = 1.0  # Right Tire rotation ratio figures number
+RIGHT_FIGURE = 1.0  # 右タイヤ回転比係数
 
 HIGH        = 1     # 定数
 LOW         = 0     # 定数
@@ -96,8 +96,8 @@ def callback(foot):
 def outputPwm(SPD):                     # PWM Duty比
 #    pi.set_PWM_dutycycle(PIN_PWMA, SPD)
 #    pi.set_PWM_dutycycle(PIN_PWMB, SPD * RIGHT_FIGURE)
-    pi.hardware_PWM(PIN_PWMA,20*1000, 1*1000*1000)
-    pi.hardware_PWM(PIN_PWMB,20*1000, 1*1000*1000)
+    pi.hardware_PWM(PIN_PWMA,20*1000, SPC*10*1000)                 # 周波数：20kHz, Duty比：100%
+    pi.hardware_PWM(PIN_PWMB,20*1000, SPC*RIGHT_FIGURE*10*1000)    # 周波数：20kHz, Duty比：100%
     print "SPD_A " + str(pi.get_PWM_dutycycle(PIN_PWMA))
     print "SPD_B " + str(pi.get_PWM_dutycycle(PIN_PWMB))
     print "FRQ_ " + str(pi.get_PWM_frequency(PIN_PWMB))
