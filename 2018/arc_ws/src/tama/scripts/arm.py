@@ -35,6 +35,7 @@ HIGH = 1
 LOW = 0
 
 tilt_pulse_width = CCW_SARVO2
+is_strike = False
 
 # initialize gpio
 pi = pigpio.pi()
@@ -48,9 +49,7 @@ class ArmClass():
         pass
     
     def callback(self,arm):
-        duty = ((arm.frame_id % 90.) / 180. * 1.9 % 0.5)\
-                / 20. * 1e6
-        #pi.hardware_PWM(pwm_pin, 50, 50000)
+        
         print('frame_id = %d ' % arm.frame_id )
         
         #叩く
@@ -78,7 +77,15 @@ class ArmClass():
 
 
     def strikeMotion(self,strike):
+        #ボタンを押すたび切り替える
+        global is_strike
         if strike:
+            #切り替える
+            is_strike = not(is_strike)
+        else:
+            pass #切り替えない
+        
+        if is_strike:
             #ハンマーを振る
             pwm_duty = SOFTPWM_1_3
             
@@ -162,6 +169,7 @@ class ArmClass():
 
             #手首を一番上向きに
             pi.set_servo_pulsewidth(PIN_SARVO2, PLUS_SERVO2)
+            
             #離す
             pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
 
@@ -174,7 +182,7 @@ def arm_py():
     armc = ArmClass()
     rospy.init_node('arm_py_node',anonymous=True)
     sub=rospy.Subscriber('arm', arm, armc.callback, queue_size=1)
-    print "start"
+    print ("start")
     rospy.spin()
 
 if __name__ == '__main__':
