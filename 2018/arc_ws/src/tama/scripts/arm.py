@@ -28,9 +28,8 @@ PLUS_SERVO2 = 2
 MINUS_SERVO2 = -2
 
 SOFTPWM_MAX = 255
-SOFTPWM_1_3 = 3 / SOFTPWM_MAX
+SOFTPWM_1_3 = (1 / 3) * SOFTPWM_MAX
 SOFTPWM_OFF = 0
-
 
 HIGH = 1
 LOW = 0
@@ -80,26 +79,31 @@ class ArmClass():
 
     def strikeMotion(self,strike):
         if strike:
+            #ハンマーを振る
             pwm_duty = SOFTPWM_1_3
             
         else:
+            #ハンマーを止める
             pwm_duty = SOFTPWM_OFF
         
-        pi.set_PWM_dutycycle(PIN_INCW,pwm_duty) # PWM off
+        pi.set_PWM_dutycycle(PIN_INCW,pwm_duty)
         print("strike = %s\t\tPWM = %d" %  (strike,pwm_duty))
         
 
     def grubMotion(self,grub):
         
         if grub:
+            #掴む
             pwm_width = CW_SARVO1
         else:
+            #離す
             pwm_width = CCW_SARVO1
         
         pi.set_servo_pulsewidth(PIN_SARVO1, pwm_width)
         print("grub = %s\t\tPWM = %f" % (grub,pwm_width))
 
     def storeMotion(self,store):
+        #[格納]ってそもそも必要なの？
         if store:
             pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
             pi.set_servo_pulsewidth(PIN_SARVO2, CCW_SARVO2)
@@ -110,6 +114,8 @@ class ArmClass():
 
     def homeMotion(self,home):
         if home:
+            # ベースを一番上に
+            # ...するらしい
             pass #ダミー
         else:
             pass #何もしない
@@ -119,34 +125,49 @@ class ArmClass():
     def tiltMotion(self,tilt):
         global tilt_pulse_width
         if (tilt == Arm.PLUS) and (tilt_pulse_width < CW_SARVO2):
+            #手首を上向きに
             tilt_pulse_width += PLUS_SERVO2
         elif (tilt == Arm.MINUS) and (tilt_pulse_width > CCW_SARVO2):
+            #手首を下向きに
             tilt_pulse_width += MINUS_SERVO2
         else:
-            pass
+            pass #止める
             
         pi.set_servo_pulsewidth(PIN_SARVO2, tilt_pulse_width)
         print("tilt = %s\t\tWidth = %d" % (tilt,tilt_pulse_width))
 
     def baseMotion(self,updown):
-        if updown == Arm.PLUS:
-            pi.write(PIN_INCW,HIGH)
-            pi.write(PIN_INCCW,LOW)
-        elif updown == Arm.MINUS:
-            pi.write(PIN_INCW,LOW)
-            pi.write(PIN_INCCW,HIGH)
+        pwm_duty_cw = SOFTPWM_MAX
+        pwm_duty_ccw = SOFTPWM_MAX
+        
+        if (updown == Arm.PLUS):
+            #ベース位置を上へ
+            pwm_duty_ccw = SOFTPWM_OFF
+        elif (updown == Arm.MINUS):
+            #ベース位置を下へ
+            pwm_duty_cw = SOFTPWM_OFF
         else:
-            pi.write(PIN_INCW,HIGH)
-            pi.write(PIN_INCCW,HIGH)
-            
-        print("updown = %s" % updown)
+            #ベース位置を固定
+            pass #何もしない
+
+        pi.set_PWM_dutycycle(PIN_INCW,pwm_duty_cw)
+        pi.set_PWM_dutycycle(PIN_INCCW,pwm_duty_ccw)
+        
+        print("updown = %s cw:%d ccw:%d" % (updown,pwm_duty_cw,pwm_duty_ccw))
 
     def releaseMotion(self,release):
         if release:
-            pass #ダミー
+            #ベースを一番下に
+            #...するのかな？
+
+            #手首を一番上向きに
+            pi.set_servo_pulsewidth(PIN_SARVO2, PLUS_SERVO2)
+            #離す
+            pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
+
         else:
             pass #何もしない
-            
+        
         print("release = %s" % release)
 
 def arm_py():
