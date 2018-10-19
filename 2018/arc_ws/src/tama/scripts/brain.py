@@ -63,7 +63,7 @@ MIN = -1
 
 #
 PIN_ENCODE1       = 5
-PIN_ENCODE2       = 1
+PIN_ENCODE2       = 6
 
 # initialize gpio
 pi = pigpio.pi()
@@ -171,19 +171,7 @@ class Brain(object):
             for i ,item in enumerate(self.operation):
                 print str(i) + "=" + str(self.operation[i])
 
-class RotaryEncoder(object):
-    def __init__(self):
-        self.cur_param = 0 
-        self.pre_param = 0
-        self.xxx_param
-    def listen(self):
-        self.pre_param = cur_param
-        self.cur_param = (pi.read(PIN_ROTARY_ENCODEA) << 1)
-        self.cur_param += pi.read(PIN_ROTARY_ENCODEB)
-        
-        
-    def direction(self):
-    
+            
 def brain_py():
     # 初期化宣言 : このソフトウェアは"brain_py_node"という名前
     rospy.init_node('brain_py_node', anonymous=True)
