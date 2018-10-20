@@ -19,6 +19,9 @@ from param import Direction
 from param import Speed
 from param import Arm
 
+# RotaryEncoder用
+from rotaryEncoder import RotaryEncoder
+
 # Debug on/off
 DEBUG = 0
 
@@ -62,15 +65,15 @@ MAX = 1
 MIN = -1
 
 #
-PIN_ENCODE1       = 5
-PIN_ENCODE2       = 6
+PIN_ROTARY_A = 5
+PIN_ROTARY_B = 6
+PIN_MICRO_SW = 18#27
+#
+IN_INITIAL = 0
+IN_OPERATE = 1
 
-# initialize gpio
-pi = pigpio.pi()
-pi.set_mode(PIN_ENCODE1, pigpio.INPUT)
-pi.set_mode(PIN_ENCODE2, pigpio.INPUT)
-
-
+MAX_ROTATE = 0
+MIN_ROTATE = 300
 
 class Brain(object):
     def __init__(self):
@@ -85,6 +88,13 @@ class Brain(object):
         self.msg_foot = foot()
         # index
         self.frame_id = 0
+        # rotaryencoder
+        self.rotary = RotaryEncoder()
+        self.rotary.setPin(PIN_ROTARY_A,PIN_ROTARY_B)
+        # updownの衝突判定用
+        self.updown = IN_INITIAL
+        self.pi = pigpio.pi()
+        self.pi.set_mode(PIN_MICRO_SW,pigpio.INPUT)
 
     def clearMsg(self):
         #arm
@@ -99,10 +109,27 @@ class Brain(object):
         self.msg_foot.direction = Direction.STOP
         self.msg_foot.speed     = Speed.LOW
 
-    def convert(self):
-        
-        print(self.operation)
+    def convertUpDown(self):
+        # initialize
+        if  self.updown == IN_INITIAL:
+            micro_sw = self.pi.read(PIN_MICRO_SW)
+            if micro_sw == 1 :
+                self.updown = 0
+                self.rotary.setRotate(0)
+            else:
+                self.msg_arm.updown = Arm.PLUS
+        # oparating
+        if self.updown == IN_OPERATE:
+            rotate = self.rotary.getRotate()
+            if self.operation[INDEX_UPDOWN] == MAX and rotate > MIN_ROTATE:  
+                self.msg_arm.updown = Arm.PLUS 
+            if self.operation[INDEX_UPDOWN] == MIN and rotate < MAX_ROTATE:  
+                self.msg_arm.updown = Arm.MINUS
+            
+        print "rotate " + str(self.rotary.getRotate())
 
+    def convert(self):
+        print(self.operation)
         # arm
         self.msg_arm.strike = bool(self.operation[INDEX_STRIKE])
         self.msg_arm.home = bool(self.operation[INDEX_HOME])
@@ -117,10 +144,8 @@ class Brain(object):
         if self.operation[INDEX_TILT] < -1*BOADER_TILT:  
             self.msg_arm.tilt= Arm.MINUS
         ## updown
-        if self.operation[INDEX_UPDOWN] == MAX:  
-            self.msg_arm.updown = Arm.PLUS 
-        if self.operation[INDEX_UPDOWN] == MIN:  
-            self.msg_arm.updown = Arm.MINUS
+        self.convertUpDown()
+
         # foot
         ## direction
         if self.operation[INDEX_DIRECTION_V] > BOADER_DIRECTION:  
@@ -150,6 +175,7 @@ class Brain(object):
         self.frame_id+=1
         print "frame_id" + str(self.msg_foot.frame_id)
 
+        print "rotate " + str(self.rotary.getRotate())
     def joyCallback(self, joy_msg):
         j = 0
         # ２回以降は代入
@@ -186,8 +212,6 @@ def brain_py():
         # publishする関数
         brain.transmit()
         #
-        print "PIN1" + str(pi.read(PIN_ENCODE1))
-        print "PIN2" + str(pi.read(PIN_ENCODE2))
         r.sleep()
 
 if __name__ == '__main__':
