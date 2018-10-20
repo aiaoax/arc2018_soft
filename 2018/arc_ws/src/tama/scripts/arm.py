@@ -9,6 +9,8 @@ import pigpio
 import rospy
 from tama.msg import arm
 from param import Arm
+from param import Mode
+
 
 # defined const
 
@@ -27,33 +29,41 @@ CCW_SARVO2 = 1000
 PLUS_SERVO2 = 2
 MINUS_SERVO2 = -2
 
-SOFTPWM_MAX = 255
-SOFTPWM_1_3 = (1 / 3) * SOFTPWM_MAX
-SOFTPWM_OFF = 0
+SOFTPWM_W_MAX = 255
+SOFTPWM_W_2_5 = (2/5.0) * SOFTPWM_W_MAX
+SOFTPWM_W_1_3 = (1/3.0) * SOFTPWM_W_MAX
+SOFTPWM_W_OFF = 0
+
+SOFTPWM_F_20K = (20 * 1000)
 
 HIGH = 1
 LOW = 0
 
 tilt_pulse_width = CCW_SARVO2
 is_strike = False
-
+is_strike_pre = False
 # initialize gpio
 pi = pigpio.pi()
 pi.set_mode(PIN_SARVO1, pigpio.OUTPUT)
 pi.set_mode(PIN_SARVO2, pigpio.OUTPUT)
 pi.set_mode(PIN_INCW, pigpio.OUTPUT)
 pi.set_mode(PIN_INCCW, pigpio.OUTPUT)
+pi.set_PWM_dutycycle(PIN_INCCW,SOFTPWM_W_OFF)
 
 class ArmClass():
     def __init__(self):
-        pass
-    
+        pi.set_PWM_frequency(PIN_INCW,SOFTPWM_F_20K)
+        pi.set_PWM_frequency(PIN_INCCW,SOFTPWM_F_20K)
+        pi.set_PWM_dutycycle(PIN_INCW,102)
+        print("======DDDDDDDDDDD=================")
+
     def callback(self,arm):
         
         print('frame_id = %d ' % arm.frame_id )
+        print('mode = %s' % arm.mode )
         
         #叩く
-        self.strikeMotion(arm.strike)
+        self.strikeMotion(arm.strike,arm.mode)
         
         #掴む/離す
         self.grubMotion(arm.grub)
@@ -68,33 +78,41 @@ class ArmClass():
         self.tiltMotion(arm.tilt)
 
         #ベース
-        self.baseMotion(arm.updown)
+        self.baseMotion(arm.updown,arm.mode)
 
         #解放
         self.releaseMotion(arm.release)
+        
 
         print("=============")
 
 
-    def strikeMotion(self,strike):
-        #ボタンを押すたび切り替える
-        global is_strike
-        if strike:
-            #切り替える
-            is_strike = not(is_strike)
-        else:
-            pass #切り替えない
+    def strikeMotion(self,strike,mode):
         
-        if is_strike:
-            #ハンマーを振る
-            pwm_duty = SOFTPWM_1_3
+        if ( mode == Mode.BULB ):
+            #バルブモード時、ボタンを押すたび切り替える
+            global is_strike
+            global is_strike_pre
+            is_srike_pre = is_strike
+            if strike:
+                #切り替える
+                is_strike = not(is_strike)
+            else:
+                pass #切り替えない
             
-        else:
-            #ハンマーを止める
-            pwm_duty = SOFTPWM_OFF
+            if is_strike:
+                #ハンマーを振る
+                pwm_duty = SOFTPWM_W_2_5
+                print ("enter") 
+            else:
+                #ハンマーを止める
+                pwm_duty = SOFTPWM_W_OFF
+                
+            print("strike = %s\t\tPWM = %f" %  (strike,pwm_duty))
         
-        pi.set_PWM_dutycycle(PIN_INCW,pwm_duty)
-        print("strike = %s\t\tPWM = %d" %  (strike,pwm_duty))
+        else:
+            pass #収穫モード時は無視
+        
         
 
     def grubMotion(self,grub):
@@ -143,24 +161,27 @@ class ArmClass():
         pi.set_servo_pulsewidth(PIN_SARVO2, tilt_pulse_width)
         print("tilt = %s\t\tWidth = %d" % (tilt,tilt_pulse_width))
 
-    def baseMotion(self,updown):
-        pwm_duty_cw = SOFTPWM_MAX
-        pwm_duty_ccw = SOFTPWM_MAX
-        
-        if (updown == Arm.PLUS):
-            #ベース位置を上へ
-            pwm_duty_ccw = SOFTPWM_OFF
-        elif (updown == Arm.MINUS):
-            #ベース位置を下へ
-            pwm_duty_cw = SOFTPWM_OFF
-        else:
-            #ベース位置を固定
-            pass #何もしない
+    def baseMotion(self,updown,mode):
+        if ( mode == Mode.HERVEST ):
+            pwm_duty_cw = SOFTPWM_W_OFF
+            pwm_duty_ccw = SOFTPWM_W_OFF
+            
+            if (updown == Arm.PLUS):
+                #ベース位置を上へ
+                pwm_duty_ccw =  SOFTPWM_W_OFF
+            elif (updown == Arm.MINUS):
+                #ベース位置を下へ
+                pwm_duty_cw = SOFTPWM_W_OFF
+            else:
+                #ベース位置を固定
+                pass #何もしない
 
-        pi.set_PWM_dutycycle(PIN_INCW,pwm_duty_cw)
-        pi.set_PWM_dutycycle(PIN_INCCW,pwm_duty_ccw)
+            pi.set_PWM_dutycycle(PIN_INCW,pwm_duty_cw)
+            pi.set_PWM_dutycycle(PIN_INCCW,pwm_duty_ccw)
+            print("updown = %s cw:%d ccw:%d" % (updown,pwm_duty_cw,pwm_duty_ccw))
         
-        print("updown = %s cw:%d ccw:%d" % (updown,pwm_duty_cw,pwm_duty_ccw))
+        else:
+            pass #バルブモードは何もしない
 
     def releaseMotion(self,release):
         if release:
@@ -168,7 +189,7 @@ class ArmClass():
             #...するのかな？
 
             #手首を一番上向きに
-            pi.set_servo_pulsewidth(PIN_SARVO2, PLUS_SERVO2)
+            pi.set_servo_pulsewidth(PIN_SARVO2, CW_SARVO2)
             
             #離す
             pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)

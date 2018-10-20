@@ -18,6 +18,7 @@ from sensor_msgs.msg import Joy
 from param import Direction
 from param import Speed
 from param import Arm
+from param import Mode
 
 # RotaryEncoder用
 from rotaryEncoder import RotaryEncoder
@@ -47,14 +48,16 @@ CROSS_V           = 10  #十字キー垂直 上1 下-1
 INDEX_DIRECTION_H = STICK_RIGHT_H  
 INDEX_DIRECTION_V = STICK_RIGHT_V 
 INDEX_SPEED       = BUTTON_R2 #neutoral=1,Max=-1
-INDEX_STRIKE      = BUTTON_R1
+INDEX_STRIKE_ON   = BUTTON_O
+INDEX_STRIKE_OFF  = BUTTON_X
 INDEX_GRUB        = BUTTON_L2 #neutoral=1,Max=-1
 INDEX_HOME        = BUTTON_O 
 INDEX_STORE       = BUTTON_L1
 INDEX_TILT        = STICK_LEFT_V
 INDEX_UPDOWN      = CROSS_V
 INDEX_RELEASE     = BUTTON_SHARE
-INDEX_MAX         = BUTTON_SHARE
+INDEX_MODE        = BUTTON_OPTION
+INDEX_MAX         = BUTTON_OPTION
 #
 BOADER_DIRECTION  = 0.2
 BOADER_SPEED      = 0.5
@@ -63,6 +66,10 @@ BOADER_TILT       = 0.2
 #
 MAX = 1
 MIN = -1
+
+#
+ON  = 1
+OFF = 0 
 
 #
 PIN_ROTARY_A = 5
@@ -95,6 +102,9 @@ class Brain(object):
         self.updown = IN_INITIAL
         self.pi = pigpio.pi()
         self.pi.set_mode(PIN_MICRO_SW,pigpio.INPUT)
+        #
+        self.mode = Mode.HERVEST
+        self.strike = False
 
     def clearMsg(self):
         #arm
@@ -105,6 +115,7 @@ class Brain(object):
         self.msg_arm.store  = False
         self.msg_arm.tilt   = Arm.NONE
         self.msg_arm.updown = Arm.NONE
+        self.msg_arm.mode   = Mode.HERVEST
         # foot
         self.msg_foot.direction = Direction.STOP
         self.msg_foot.speed     = Speed.LOW
@@ -131,8 +142,12 @@ class Brain(object):
     def convert(self):
         print(self.operation)
         # arm
-        self.msg_arm.strike = bool(self.operation[INDEX_STRIKE])
-        self.msg_arm.home = bool(self.operation[INDEX_HOME])
+        if self.operation[INDEX_STRIKE_ON] == 1:
+            self.strike = True
+        if self.operation[INDEX_STRIKE_OFF] == 1:
+            self.strike = False
+        self.msg_arm.strike = self.strike
+        # self.msg_arm.home = bool(self.operation[INDEX_HOME])
         self.msg_arm.release= bool(self.operation[INDEX_RELEASE])
         ## grub & store
         if self.operation[INDEX_GRUB] < BOADER_GRUB:  
@@ -161,7 +176,15 @@ class Brain(object):
             self.msg_foot.speed = Speed.HIGH
         elif self.operation[INDEX_SPEED] < BOADER_SPEED:  
             self.msg_foot.speed = Speed.MIDDLE
-
+        
+        # mode
+        if self.operation[INDEX_MODE] == 1:
+            if self.mode == Mode.HERVEST:
+                self.mode = Mode.BULB
+            else:
+                self.mode = Mode.HERVEST
+        self.msg_arm.mode = self.mode
+        
     def transmit(self):
         # clear
         self.clearMsg()
@@ -176,6 +199,7 @@ class Brain(object):
         print "frame_id" + str(self.msg_foot.frame_id)
 
         print "rotate " + str(self.rotary.getRotate())
+
     def joyCallback(self, joy_msg):
         j = 0
         # ２回以降は代入

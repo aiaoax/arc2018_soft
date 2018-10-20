@@ -19,3 +19,7 @@ class Arm(IntEnum):
     PLUS  = 1
     NONE  = 2
     MINUS = 3
+
+class Mode(IntEnum):
+    HERVEST = 1
+    BULB    = 2
