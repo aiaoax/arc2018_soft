@@ -54,7 +54,7 @@ class ArmClass():
     def __init__(self):
         pi.set_PWM_frequency(PIN_INCW,SOFTPWM_F_20K)
         pi.set_PWM_frequency(PIN_INCCW,SOFTPWM_F_20K)
-        pi.set_PWM_dutycycle(PIN_INCW,102)
+        #pi.set_PWM_dutycycle(PIN_INCW,102)
         print("======DDDDDDDDDDD=================")
 
     def callback(self,arm):
@@ -91,23 +91,16 @@ class ArmClass():
         
         if ( mode == Mode.BULB ):
             #バルブモード時、ボタンを押すたび切り替える
-            global is_strike
-            global is_strike_pre
-            is_srike_pre = is_strike
-            if strike:
-                #切り替える
-                is_strike = not(is_strike)
-            else:
-                pass #切り替えない
             
-            if is_strike:
+            if strike :
                 #ハンマーを振る
                 pwm_duty = SOFTPWM_W_2_5
-                print ("enter") 
+                print ("enter")
             else:
                 #ハンマーを止める
                 pwm_duty = SOFTPWM_W_OFF
                 
+            pi.set_PWM_dutycycle(PIN_INCW,pwm_duty)
             print("strike = %s\t\tPWM = %f" %  (strike,pwm_duty))
         
         else:
