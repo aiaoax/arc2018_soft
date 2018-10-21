@@ -21,13 +21,13 @@ PIN_INCW = 15
 PIN_INCCW = 18
 
 #Sarvo PWM 
-CW_SARVO1 = 1500
-CW_SARVO2 = 1500
-CCW_SARVO1 = 1000
-CCW_SARVO2 = 1000
+CW_SARVO1 = 2400
+CW_SARVO2 = 2400
+CCW_SARVO1 = 550
+CCW_SARVO2 = 550
 
-PLUS_SERVO2 = 2
-MINUS_SERVO2 = -2
+PLUS_SERVO2 = 50
+MINUS_SERVO2 = (-1 * PLUS_SERVO2)
 
 SOFTPWM_W_MAX = 255
 SOFTPWM_W_2_5 = (2/5.0) * SOFTPWM_W_MAX
@@ -39,7 +39,7 @@ SOFTPWM_F_20K = (20 * 1000)
 HIGH = 1
 LOW = 0
 
-tilt_pulse_width = CCW_SARVO2
+tilt_pulse_width = ((CW_SARVO2+CCW_SARVO2)/2)
 is_strike = False
 is_strike_pre = False
 # initialize gpio
@@ -142,12 +142,18 @@ class ArmClass():
 
     def tiltMotion(self,tilt):
         global tilt_pulse_width
-        if (tilt == Arm.PLUS) and (tilt_pulse_width < CW_SARVO2):
+        if (tilt == Arm.PLUS):
             #手首を上向きに
             tilt_pulse_width += PLUS_SERVO2
-        elif (tilt == Arm.MINUS) and (tilt_pulse_width > CCW_SARVO2):
+            if(tilt_pulse_width > CW_SARVO2):
+                tilt_pulse_width = CW_SARVO2
+            
+        elif (tilt == Arm.MINUS):
             #手首を下向きに
             tilt_pulse_width += MINUS_SERVO2
+            if(tilt_pulse_width < CCW_SARVO2):
+                tilt_pulse_width = CCW_SARVO2
+            
         else:
             pass #止める
             
