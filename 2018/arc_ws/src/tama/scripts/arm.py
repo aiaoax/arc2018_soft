@@ -108,7 +108,7 @@ class ArmClass():
 
     def strikeMotion(self,strike,mode):
         if ( mode == Mode.BULB ):
-            #バルブモード時、ボタンを押すたび切り替える
+            #バルブモード時、〇ボタンで振り始め、×ボタンで止める
             #切り替え判定はbrainで実施
             if strike :
                 #ハンマーを振る
