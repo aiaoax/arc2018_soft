@@ -39,7 +39,7 @@ HIGH = 1
 LOW = 0
 
 # global variable initialize
-tilt_pulse_width = ((CW_SARVO2+CCW_SARVO2)/2)
+tilt_pulse_width = ((CW_SARVO2 + CCW_SARVO2) / 2)
 mode_old = Mode.HERVEST
 
 # initialize gpio
@@ -97,8 +97,8 @@ class ArmClass():
             pi.set_PWM_dutycycle(PIN_INCCW,SOFTPWM_W_OFF)
 
             #サーボの位置調整
-            pi.set_servo_pulsewidth(PIN_SARVO1, CCW_SARVO1)
-            pi.set_servo_pulsewidth(PIN_SARVO2, CCW_SARVO2)
+            pi.set_servo_pulsewidth(PIN_SARVO1, ((CW_SARVO1 + CCW_SARVO1) / 2))
+            pi.set_servo_pulsewidth(PIN_SARVO2, ((CW_SARVO2 + CCW_SARVO2) / 2))
             
         else:
             pass
