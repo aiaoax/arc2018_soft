@@ -27,6 +27,9 @@ from rotaryEncoder import RotaryEncoder
 DEBUG = 0
 
 #
+PUBLISH_HZ        = 60  #Pubrishの周期
+SPEED_STEP        = 64
+#
 STICK_RIGHT_H     = 2   #右スティック水平 
 STICK_RIGHT_V     = 5   #右スティック垂直 
 STICK_LEFT_H      = 0   #左スティック水平 
@@ -47,7 +50,8 @@ CROSS_V           = 10  #十字キー垂直 上1 下-1
 #
 INDEX_DIRECTION_H = STICK_RIGHT_H  
 INDEX_DIRECTION_V = STICK_RIGHT_V 
-INDEX_SPEED       = BUTTON_R2 #neutoral=1,Max=-1
+INDEX_SPEED_L     = STICK_LEFT_V 
+INDEX_SPEED_R     = STICK_RIGHT_V  
 INDEX_STRIKE_ON   = BUTTON_O
 INDEX_STRIKE_OFF  = BUTTON_X
 INDEX_GRUB        = BUTTON_L2 #neutoral=1,Max=-1
@@ -117,8 +121,10 @@ class Brain(object):
         self.msg_arm.updown = Arm.NONE
         self.msg_arm.mode   = Mode.HERVEST
         # foot
-        self.msg_foot.direction = Direction.STOP
-        self.msg_foot.speed     = Speed.LOW
+        self.msg_foot.direction_l = Direction.AHEAD
+        self.msg_foot.direction_r = Direction.AHEAD
+        self.msg_foot.speed_l     = 0
+        self.msg_foot.speed_r     = 0
 
     def convertUpDown(self):
         # initialize
@@ -137,10 +143,32 @@ class Brain(object):
             if self.operation[INDEX_UPDOWN] == MIN and rotate < MAX_ROTATE:  
                 self.msg_arm.updown = Arm.MINUS
             
-        print "rotate " + str(self.rotary.getRotate())
+        #print "rotate " + str(self.rotary.getRotate())
 
+    def convertFoot(self):
+        # foot
+        ## direction
+        if self.operation[INDEX_SPEED_L] >= 0:  
+            self.msg_foot.direction_l = Direction.AHEAD
+        else:  
+            self.msg_foot.direction_l = Direction.BACK
+        if self.operation[INDEX_SPEED_R] >= 0:  
+            self.msg_foot.direction_r = Direction.AHEAD
+        else:  
+            self.msg_foot.direction_r = Direction.BACK
+        ## speed
+        speed = self.operation[INDEX_SPEED_L]  
+        self.msg_foot.speed_l = (speed*SPEED_STEP*100)/SPEED_STEP
+        speed = self.operation[INDEX_SPEED_R]  
+        self.msg_foot.speed_r = (speed*SPEED_STEP*100)/SPEED_STEP
+        
+        print "Dir_L =" + str(self.msg_foot.direction_l)
+        print "Dir_R =" + str(self.msg_foot.direction_r)
+        print "Spd_L =" + str(self.msg_foot.speed_l)
+        print "Spd_R =" + str(self.msg_foot.speed_r)
+        
     def convert(self):
-        print(self.operation)
+        #print(self.operation)
         # arm
         if self.operation[INDEX_STRIKE_ON] == 1:
             self.strike = True
@@ -160,23 +188,9 @@ class Brain(object):
             self.msg_arm.tilt= Arm.MINUS
         ## updown
         self.convertUpDown()
-
-        # foot
-        ## direction
-        if self.operation[INDEX_DIRECTION_V] > BOADER_DIRECTION:  
-            self.msg_foot.direction = Direction.AHEAD
-        elif self.operation[INDEX_DIRECTION_V] < -1*BOADER_DIRECTION:  
-            self.msg_foot.direction = Direction.BACK
-        elif self.operation[INDEX_DIRECTION_H] > BOADER_DIRECTION:  
-            self.msg_foot.direction = Direction.LEFT
-        elif self.operation[INDEX_DIRECTION_H] < -1*BOADER_DIRECTION:  
-            self.msg_foot.direction = Direction.RIGHT
-        ## speed
-        if self.operation[INDEX_SPEED] == MIN:  
-            self.msg_foot.speed = Speed.HIGH
-        elif self.operation[INDEX_SPEED] < BOADER_SPEED:  
-            self.msg_foot.speed = Speed.MIDDLE
         
+        # foot
+        self.convertFoot()
         # mode
         if self.operation[INDEX_MODE] == 1:
             if self.mode == Mode.HERVEST:
@@ -228,7 +242,7 @@ def brain_py():
     # インスタンスの作成 
     brain = Brain()
     # 1秒間にpublishする数の設定
-    r = rospy.Rate(5)
+    r = rospy.Rate(PUBLISH_HZ)
 
     print"start brain"
     # ctl +　Cで終了しない限りwhileループでpublishし続ける
