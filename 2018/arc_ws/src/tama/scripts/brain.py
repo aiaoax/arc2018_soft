@@ -54,11 +54,13 @@ INDEX_SPEED_L     = STICK_LEFT_V
 INDEX_SPEED_R     = STICK_RIGHT_V  
 INDEX_STRIKE_ON   = BUTTON_O
 INDEX_STRIKE_OFF  = BUTTON_X
-INDEX_GRUB        = BUTTON_L2 #neutoral=1,Max=-1
-INDEX_HOME        = BUTTON_O 
+INDEX_GRUB_ON     = BUTTON_O 
+INDEX_GRUB_OFF    = BUTTON_X
+INDEX_HOME        = BUTTON_DELTA 
 INDEX_STORE       = BUTTON_L1
-INDEX_TILT        = STICK_LEFT_V
-INDEX_UPDOWN      = CROSS_V
+INDEX_TILT        = CROSS_V 
+INDEX_UP          = BUTTON_R1
+INDEX_DOWN        = BUTTON_R2 
 INDEX_RELEASE     = BUTTON_SHARE
 INDEX_MODE        = BUTTON_OPTION
 INDEX_MAX         = BUTTON_OPTION
@@ -83,8 +85,8 @@ PIN_MICRO_SW = 18#27
 IN_INITIAL = 0
 IN_OPERATE = 1
 
-MAX_ROTATE = 0
-MIN_ROTATE = 300
+MAX_ROTATE = 3000
+MIN_ROTATE = 0
 
 class Brain(object):
     def __init__(self):
@@ -103,12 +105,14 @@ class Brain(object):
         self.rotary = RotaryEncoder()
         self.rotary.setPin(PIN_ROTARY_A,PIN_ROTARY_B)
         # updownの衝突判定用
-        self.updown = IN_INITIAL
+        #self.updown = IN_INITIAL
+        self.updown = IN_OPERATE # for debug
         self.pi = pigpio.pi()
         self.pi.set_mode(PIN_MICRO_SW,pigpio.INPUT)
         #
         self.mode = Mode.HERVEST
         self.strike = False
+        self.grub = False
 
     def clearMsg(self):
         #arm
@@ -138,9 +142,10 @@ class Brain(object):
         # oparating
         if self.updown == IN_OPERATE:
             rotate = self.rotary.getRotate()
-            if self.operation[INDEX_UPDOWN] == MAX and rotate > MIN_ROTATE:  
+            rotate = 1 # for debug
+            if self.operation[INDEX_UP] == 1 and rotate > MIN_ROTATE:  
                 self.msg_arm.updown = Arm.PLUS 
-            if self.operation[INDEX_UPDOWN] == MIN and rotate < MAX_ROTATE:  
+            elif self.operation[INDEX_DOWN] != 1 and rotate < MAX_ROTATE:  
                 self.msg_arm.updown = Arm.MINUS
             
         #print "rotate " + str(self.rotary.getRotate())
@@ -161,7 +166,9 @@ class Brain(object):
         self.msg_foot.speed_l = (speed*SPEED_STEP*100)/SPEED_STEP
         speed = self.operation[INDEX_SPEED_R]  
         self.msg_foot.speed_r = (speed*SPEED_STEP*100)/SPEED_STEP
-        
+       
+    def printMsg(self):
+        print "UpDown=" + str(self.msg_arm.updown)
         print "Dir_L =" + str(self.msg_foot.direction_l)
         print "Dir_R =" + str(self.msg_foot.direction_r)
         print "Spd_L =" + str(self.msg_foot.speed_l)
@@ -175,16 +182,19 @@ class Brain(object):
         if self.operation[INDEX_STRIKE_OFF] == 1:
             self.strike = False
         self.msg_arm.strike = self.strike
-        # self.msg_arm.home = bool(self.operation[INDEX_HOME])
+        self.msg_arm.home = bool(self.operation[INDEX_HOME])
         self.msg_arm.release= bool(self.operation[INDEX_RELEASE])
         ## grub & store
-        if self.operation[INDEX_GRUB] < BOADER_GRUB:  
-            self.msg_arm.grub = True 
-            self.msg_arm.store = bool(self.operation[INDEX_STORE])
+        if self.operation[INDEX_GRUB_ON] == 1:
+            self.grub = True
+        if self.operation[INDEX_GRUB_OFF] == 1:
+            self.grub = False
+        self.msg_arm.grub = self.grub 
+        self.msg_arm.store = bool(self.operation[INDEX_STORE])
         ## tilt
-        if self.operation[INDEX_TILT] > BOADER_TILT:  
+        if self.operation[INDEX_TILT] == 1:  
             self.msg_arm.tilt = Arm.PLUS 
-        if self.operation[INDEX_TILT] < -1*BOADER_TILT:  
+        if self.operation[INDEX_TILT] == -1:  
             self.msg_arm.tilt= Arm.MINUS
         ## updown
         self.convertUpDown()
