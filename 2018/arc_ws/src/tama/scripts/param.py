@@ -6,9 +6,9 @@ from enum import IntEnum
 class Direction(IntEnum):
     AHEAD = 1
     BACK  = 2
-    RIGHT = 3
-    LEFT  = 4
-    STOP  = 5
+#    RIGHT = 3
+#    LEFT  = 4
+#    STOP  = 5
 
 class Speed(IntEnum):
     LOW    = 1 
