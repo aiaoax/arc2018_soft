@@ -27,7 +27,8 @@ from rotaryEncoder import RotaryEncoder
 DEBUG = 0
 
 #
-PUBLISH_HZ        = 60  #Pubrishの周期
+HZ_PUBLISH        = 60  #Pubrishの周期
+HZ_MODE           = 5
 SPEED_STEP        = 64
 #
 STICK_RIGHT_H     = 2   #右スティック水平 
@@ -113,6 +114,7 @@ class Brain(object):
         self.mode = Mode.HERVEST
         self.strike = False
         self.grub = False
+        self.cnt_mode = 0
 
     def clearMsg(self):
         #arm
@@ -129,6 +131,17 @@ class Brain(object):
         self.msg_foot.direction_r = Direction.AHEAD
         self.msg_foot.speed_l     = 0
         self.msg_foot.speed_r     = 0
+
+    def convertMode(self):
+        if self.operation[INDEX_MODE] == 1:
+            if (self.cnt_mode % ( HZ_PUBLISH/HZ_MODE )) == 0:
+                self.cnt_mode = 0
+                if self.mode == Mode.HERVEST :
+                    self.mode = Mode.BULB
+                else:
+                    self.mode = Mode.HERVEST
+        self.msg_arm.mode = self.mode
+        self.cnt_mode += 1
 
     def convertUpDown(self):
         # initialize
@@ -163,9 +176,9 @@ class Brain(object):
             self.msg_foot.direction_r = Direction.BACK
         ## speed
         speed = self.operation[INDEX_SPEED_L]  
-        self.msg_foot.speed_l = (speed*SPEED_STEP*100)/SPEED_STEP
+        self.msg_foot.speed_l = int(speed*SPEED_STEP*100)/SPEED_STEP
         speed = self.operation[INDEX_SPEED_R]  
-        self.msg_foot.speed_r = (speed*SPEED_STEP*100)/SPEED_STEP
+        self.msg_foot.speed_r = int(speed*SPEED_STEP*100)/SPEED_STEP
        
     def printMsg(self):
         print "UpDown=" + str(self.msg_arm.updown)
@@ -198,17 +211,12 @@ class Brain(object):
             self.msg_arm.tilt= Arm.MINUS
         ## updown
         self.convertUpDown()
+        # mode
+        self.convertMode()
         
         # foot
         self.convertFoot()
-        # mode
-        if self.operation[INDEX_MODE] == 1:
-            if self.mode == Mode.HERVEST:
-                self.mode = Mode.BULB
-            else:
-                self.mode = Mode.HERVEST
-        self.msg_arm.mode = self.mode
-        
+         
     def transmit(self):
         # clear
         self.clearMsg()
@@ -221,7 +229,6 @@ class Brain(object):
         self.pub_foot.publish(self.msg_foot)
         self.frame_id+=1
         print "frame_id" + str(self.msg_foot.frame_id)
-
         print "rotate " + str(self.rotary.getRotate())
 
     def joyCallback(self, joy_msg):
@@ -252,7 +259,7 @@ def brain_py():
     # インスタンスの作成 
     brain = Brain()
     # 1秒間にpublishする数の設定
-    r = rospy.Rate(PUBLISH_HZ)
+    r = rospy.Rate(HZ_PUBLISH)
 
     print"start brain"
     # ctl +　Cで終了しない限りwhileループでpublishし続ける
