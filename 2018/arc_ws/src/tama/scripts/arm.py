@@ -54,6 +54,7 @@ class ArmClass():
     def __init__(self):
         pi.set_PWM_frequency(PIN_INCW,SOFTPWM_F_20K)
         pi.set_PWM_frequency(PIN_INCCW,SOFTPWM_F_20K)
+        self.modeFileWrite(Mode.HERVEST)
         print("======start arm=================")
 
     def callback(self,arm):
@@ -92,6 +93,8 @@ class ArmClass():
         if (mode != mode_old):
             #モード変更時初期化
 
+            self.modeFileWrite(mode)
+
             #モーター停止
             pi.set_PWM_dutycycle(PIN_INCW,SOFTPWM_W_OFF)
             pi.set_PWM_dutycycle(PIN_INCCW,SOFTPWM_W_OFF)
@@ -105,6 +108,19 @@ class ArmClass():
 
         mode_old = mode
         print("mode = %s" % mode)
+
+    def modeFileWrite(self, mode):
+        #現在のモードを書き込む
+        file = open('/usr/local/www/mode.txt','w')
+        tmp_str = "UNKNOWN"
+
+        if(mode == Mode.HERVEST):
+            tmp_str = "HERVEST"
+        elif (mode == Mode.BULB):
+            tmp_str = "BULB"
+
+        file.write(tmp_str)
+        file.close()
 
     def strikeMotion(self,strike,mode):
         if ( mode == Mode.BULB ):
