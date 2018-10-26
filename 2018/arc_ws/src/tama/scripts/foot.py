@@ -122,8 +122,8 @@ def callback(foot):
 def outputPwm(PWM, SPD):                     # PWM Duty比
     pi.hardware_PWM(PWM,20*1000, SPD*10*1000)                 # 周波数：20kHz, Duty比：SPD%
     print "SPD   : " + str(pi.get_PWM_dutycycle(PWM))
-	print "FRQ   : " + str(pi.get_PWM_frequency(PWM))
-	print "RANGE : " + str(pi.get_PWM_range(PWM))
+    print "FRQ   : " + str(pi.get_PWM_frequency(PWM))
+    print "RANGE : " + str(pi.get_PWM_range(PWM))
 #def outputPwm(SPD):                     # PWM Duty比
 #    pi.hardware_PWM(PIN_PWMA,20*1000, SPD*LEFT_FIGURE*10*1000)                 # 周波数：20kHz, Duty比：100%
 #    pi.hardware_PWM(PIN_PWMB,20*1000, SPD*RIGHT_FIGURE*10*1000)    # 周波数：20kHz, Duty比：100%
