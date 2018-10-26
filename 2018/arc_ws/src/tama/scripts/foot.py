@@ -20,9 +20,9 @@ PIN_BIN1    = 26    # GPIO.25 Right IN1
 PIN_BIN2    = 19#20 # GPIO.28 Right IN2
 PIN_PWMB    = 13    # GPIO.23 Right PWM
 
-HIGH_SPD    = 100   # 速度：高, 値の範囲：0~100%
-MIDDLE_SPD  = 75    # 速度：中, 値の範囲：0~100%
-LOW_SPD     = 50    # 速度：低, 値の範囲：0~100%
+#HIGH_SPD    = 100  # 速度：高, 値の範囲：0~100%
+#MIDDLE_SPD  = 75   # 速度：中, 値の範囲：0~100%
+#LOW_SPD     = 50   # 速度：低, 値の範囲：0~100%
 
 #HIGH_TURN   = 75   # 旋回速度：高, 値の範囲：0~100%
 #MIDDLE_TURN = 60   # 旋回速度：中, 値の範囲：0~100%
@@ -55,38 +55,26 @@ def callback(foot):
     #左モータ
     print"Left Motor"
     print"==============="
-    #方向制御
-    if foot.direction_l == Direction.AHEAD:
+    if foot.speed_l > 0:
         outputDirection(PIN_AIN1, LOW, PIN_AIN2, HIGH)  # Left Motor : CCW
-    elif foot.direction_l == Direction.BACK:
+        outputPwm(PIN_PWMA, foot.speed_l*LEFT_FIGURE)   # 速度
+    elif foot.speed_l < 0:
         outputDirection(PIN_AIN1, HIGH, PIN_AIN2, LOW)  # Left Motor : CW
-	elif foot.direction_l == Direction.STOP:
+        outputPwm(PIN_PWMA, abs(foot.speed_l)*LEFT_FIGURE)  # 速度
+    elif foot.speed_l == 0:
         outputDirection(PIN_AIN1, HIGH, PIN_AIN2, HIGH) # Left Motor : ShortBreak
-    #速度制御
-    if foot.speed_l == Speed.HIGH:
-        outputPwm(PIN_PWMA, HIGH_SPD*LEFT_FIGURE)       # 速度：高
-    elif foot.speed_l == Speed.MIDDLE:
-        outputPwm(PIN_PWMA, MIDDLE_SPD*LEFT_FIGURE)     # 速度：中
-    elif foot.speed_l == Speed.LOW:
-        outputPwm(PIN_PWMA, LOW_SPD*LEFT_FIGURE)        # 速度：低
 
     #右モータ
     print"Right Motor"
     print"==============="
-    #方向制御
-    if foot.direction_r == Direction.AHEAD:
+    if foot.speed_r > 0:
         outputDirection(PIN_BIN1, HIGH, PIN_BIN2, LOW)  # Right Motor : CW
-    elif foot.direction_r == Direction.BACK:
+        outputPwm(PIN_PWMB, foot.speed_r*RIGHT_FIGURE)  # 速度
+    elif foot.speed_r < 0:
         outputDirection(PIN_BIN1, LOW, PIN_BIN2, HIGH)  # Right Motor : CCW
-	elif foot.direction_r == Direction.STOP:
+        outputPwm(PIN_PWMB, abs(foot.speed_r)*RIGHT_FIGURE) # 速度
+    elif foot.speed_r == 0:
         outputDirection(PIN_BIN1, HIGH, PIN_BIN2, HIGH) # Right Motor : ShortBreak
-	#速度制御
-    if foot.speed_r == Speed.HIGH:
-        outputPwm(PIN_PWMB, HIGH_SPD*RIGHT_FIGURE)      # 速度：高
-    elif foot.speed_r == Speed.MIDDLE:
-        outputPwm(PIN_PWMB, MIDDLE_SPD*RIGHT_FIGURE)    # 速度：中
-    elif foot.speed_r == Speed.LOW:
-        outputPwm(PIN_PWMB, LOW_SPD*RIGHT_FIGURE)       # 速度：低
     print"==============="
     #前進
 #    if foot.direction == Direction.AHEAD:
