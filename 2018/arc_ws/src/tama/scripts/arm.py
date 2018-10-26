@@ -112,7 +112,7 @@ class ArmClass():
     def modeFileWrite(self, mode):
         #現在のモードを書き込む
         file = open('/usr/local/www/mode.txt','w')
-        tmp_str = "NONE"
+        tmp_str = "UNKNOWN"
 
         if(mode == Mode.HERVEST):
             tmp_str = "HERVEST"
