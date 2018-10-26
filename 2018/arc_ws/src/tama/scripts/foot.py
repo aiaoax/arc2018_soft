@@ -131,8 +131,8 @@ def outputPwm(PWM, SPD):                     # PWM Duty比
 #    print "SPD_B " + str(pi.get_PWM_dutycycle(PIN_PWMB))
 #    print "FRQ_ " + str(pi.get_PWM_frequency(PIN_PWMB))
 #    print "RANGE_ " + str(pi.get_PWM_range(PIN_PWMB))
-    
-def outputDirection(IN1_P,　IN1_D, IN2_P, IN2_D):    # 方向
+
+def outputDirection(IN1_P, IN1_D, IN2_P, IN2_D):    # 方向
     #モータ回転方向
     pi.write(IN1_P,IN1_D)
     pi.write(IN2_P,IN2_D)
