@@ -110,8 +110,16 @@ class ArmClass():
         print("mode = %s" % mode)
 
     def modeFileWrite(self, mode):
+        #現在のモードを書き込む
         file = open('/usr/local/www/mode.txt','w')
-        file.write(mode)
+        tmp_str = "NONE"
+
+        if(mode == Mode.HERVEST):
+            tmp_str = "HERVEST"
+        elif (mode == Mode.BULB):
+            tmp_str = "BULB"
+
+        file.write(tmp_str)
         file.close()
 
     def strikeMotion(self,strike,mode):
