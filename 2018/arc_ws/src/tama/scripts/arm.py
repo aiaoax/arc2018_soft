@@ -37,6 +37,9 @@ SOFTPWM_W_2_5 = (2/5.0) * SOFTPWM_W_MAX
 SOFTPWM_W_1_3 = (1/3.0) * SOFTPWM_W_MAX
 SOFTPWM_W_OFF = 0
 
+BASE_UP_FIGURE = 1.0
+BASE_DN_FIGURE = 1.0
+
 SOFTPWM_F_20K = (20 * 1000)
 
 HIGH = 1
@@ -113,12 +116,8 @@ class ArmClass():
                 file = open('/usr/local/www/mode.txt', 'w')
                 tmp_str = "UNKNOWN"
 
-                #モードが増えたら足していこう...
-                #ほかにいい方法ないのかを検討
-                if mode == Mode.HERVEST:
-                    tmp_str = "HERVEST"
-                elif mode == Mode.BULB:
-                    tmp_str = "BULB"
+                #モード名を取得
+                tmp_str = Mode(mode).name
 
                 file.write(tmp_str)
 
@@ -140,7 +139,10 @@ class ArmClass():
         else:
             pass
 
-        print("mode = %s" % self.mode_old)
+        if self.mode_old > 0:
+            print("mode = %s" % Mode(self.mode_old).name)
+        else:
+            print("mode = %s" % "UNKNOWN")
 
 
     def strikeMotion(self, strike):
@@ -159,7 +161,7 @@ class ArmClass():
                 pwm_duty = SOFTPWM_W_OFF
 
             self.pic.set_PWM_dutycycle(PIN_INCW, pwm_duty)
-            print("strike = %s\t\tPWM = %f" %  (strike, pwm_duty))
+            print("strike = %s\t\tPWM = %f" % (strike, pwm_duty))
 
         else:
             pass #バルブモード以外は無視
@@ -261,7 +263,7 @@ class ArmClass():
                 pass #止める
 
             self.pic.set_servo_pulsewidth(PIN_SARVO2, self.tilt_pulse_width)
-            print("tilt = %s\t\tWidth = %d" % (tilt, self.tilt_pulse_width))
+            print("tilt = %s\t\tWidth = %d" % (Arm(tilt).name, self.tilt_pulse_width))
 
         else:
             pass #収穫モード以外は何もしない
@@ -278,17 +280,17 @@ class ArmClass():
 
             if updown == Arm.PLUS:
                 #ベース位置を上へ
-                pwm_duty_ccw = SOFTPWM_W_2_5
+                pwm_duty_ccw = SOFTPWM_W_2_5 * BASE_UP_FIGURE
             elif updown == Arm.MINUS:
                 #ベース位置を下へ
-                pwm_duty_cw = SOFTPWM_W_2_5
+                pwm_duty_cw = SOFTPWM_W_2_5 * BASE_DN_FIGURE
             else:
                 #ベース位置を固定
                 pass #何もしない
 
             self.pic.set_PWM_dutycycle(PIN_INCW, pwm_duty_cw)
             self.pic.set_PWM_dutycycle(PIN_INCCW, pwm_duty_ccw)
-            print("updown = %s cw:%d ccw:%d" % (updown, pwm_duty_cw, pwm_duty_ccw))
+            print("updown = %s\t\tcw:%d ccw:%d" % (Arm(updown).name, pwm_duty_cw, pwm_duty_ccw))
 
         else:
             pass #収穫モード以外は何もしない
