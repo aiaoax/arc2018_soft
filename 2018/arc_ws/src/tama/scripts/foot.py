@@ -34,8 +34,8 @@ LEFT_FIGURE  = 1.0  #0.8  # 右タイヤ回転比係数
 HIGH        = 1     # 定数
 LOW         = 0     # 定数
 
-BREAK_CNT_L = 0     # Left Motor Break Counter for ABS  LSB: 16.7ms
-BREAK_CNT_R = 0     # Right Motor Break Counter for ABS LSB: 16.7ms
+BREAK_CNT_l = 0     # Left Motor Break Counter for ABS  LSB: 16.7ms
+BREAK_CNT_r = 0     # Right Motor Break Counter for ABS LSB: 16.7ms
 
 # initialize gpio
 pi = pigpio.pi()
@@ -48,6 +48,9 @@ pi.set_mode(PIN_PWMB, pigpio.OUTPUT)
 #pi.set_PWM_frequency(PIN_PWMA,1000)
 #pi.set_PWM_frequency(PIN_PWMB,1000)
 def callback(foot):
+    global BREAK_CNT_l
+    global BREAK_CNT_r
+    
     print("frame_id = %d" % foot.frame_id)
     print("direction_l = %d" % foot.direction_l)
     print("direction_r = %d" % foot.direction_r)
@@ -65,13 +68,13 @@ def callback(foot):
         outputDirection(PIN_AIN1, HIGH, PIN_AIN2, LOW)  # Left Motor : CW
         outputPwm(PIN_PWMA, abs(foot.speed_l)*LEFT_FIGURE)  # 速度
     elif foot.speed_l == 0:
-        if BREAK_CNT_L > 24:            # Over 400ms
-            BREAK_CNT_L = 0             # Initialization
-        if BREAK_CNT_L <= 12:           # Until 200ms
+        if BREAK_CNT_l > 24:            # Over 400ms
+            BREAK_CNT_l = 0             # Initialization
+        if BREAK_CNT_l <= 12:           # Until 200ms
             outputDirection(PIN_AIN1, HIGH, PIN_AIN2, HIGH) # Left Motor : ShortBreak
-        elif BREAK_CNT_L > 12:          # During 216.7ms to 400ms
+        elif BREAK_CNT_l > 12:          # During 216.7ms to 400ms
             pass
-        BREAK_CNT_L = BREAK_CNT_L + 1   # Counter for ABS + 16.7ms
+        BREAK_CNT_l = BREAK_CNT_l + 1   # Counter for ABS + 16.7ms
 
     #右モータ
     print"Right Motor"
@@ -83,13 +86,13 @@ def callback(foot):
         outputDirection(PIN_BIN1, LOW, PIN_BIN2, HIGH)  # Right Motor : CCW
         outputPwm(PIN_PWMB, abs(foot.speed_r)*RIGHT_FIGURE) # 速度
     elif foot.speed_r == 0:
-        if BREAK_CNT_R > 24:            # Over 400ms
-            BREAK_CNT_R = 0             # Initialization
-        if BREAK_CNT_R <= 12:           # Until 200ms
+        if BREAK_CNT_r > 24:            # Over 400ms
+            BREAK_CNT_r = 0             # Initialization
+        if BREAK_CNT_r <= 12:           # Until 200ms
             outputDirection(PIN_BIN1, HIGH, PIN_BIN2, HIGH) # Right Motor : ShortBreak
-        elif BREAK_CNT_R > 12:          # During 216.7ms to 400ms
+        elif BREAK_CNT_r > 12:          # During 216.7ms to 400ms
             pass
-        BREAK_CNT_R = BREAK_CNT_R + 1   # Counter for ABS + 16.7ms
+        BREAK_CNT_r = BREAK_CNT_r + 1   # Counter for ABS + 16.7ms
     print"==============="
     #前進
 #    if foot.direction == Direction.AHEAD:
