@@ -1,0 +1,9 @@
+int32 frame_id
+bool  strike 
+bool  grub 
+bool  store
+bool  home
+int32 tilt
+int32 updown
+bool  release
+int32 mode

@@ -1,0 +1,7 @@
+<launch>
+  <group ns="sonar1">
+    <node pkg="joy" name="joy" type="joy_node"/>
+    <node pkg="tama" name="brain" type="brain.py"/>
+    <node pkg="tama" name="sonar" type="sonar.py" output="screen"/>
+  </group>
+</launch>
