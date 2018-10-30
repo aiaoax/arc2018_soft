@@ -17,7 +17,7 @@ PIN_AIN1    = 19#16#19 # GPIO.24 Left IN1
 PIN_AIN2    = 26#20    # GPIO.27 Left IN2 
 PIN_PWMA    = 13#12    # GPIO.26 Left PWM
 PIN_BIN1    = 20#26    # GPIO.25 Right IN1
-PIN_BIN2    = 16#20 # GPIO.28 Right IN2
+PIN_BIN2    = 16#20    # GPIO.28 Right IN2
 PIN_PWMB    = 12#13    # GPIO.23 Right PWM
 
 #HIGH_SPD    = 100  # 速度：高, 値の範囲：0~100%
@@ -31,11 +31,25 @@ PIN_PWMB    = 12#13    # GPIO.23 Right PWM
 RIGHT_FIGURE = 1.0  # 右タイヤ回転比係数
 LEFT_FIGURE  = 1.0  #0.8  # 右タイヤ回転比係数
 
+SPD_MASURE_TERM = 18  # 16.7ms x 18 = 300.6ms
+SPD_CONTROL_TERM = 60 # 16.7ms x 60 = 1002ms
+
 HIGH        = 1     # 定数
 LOW         = 0     # 定数
 
 BREAK_CNT_l = 0     # Left Motor Break Counter for ABS  LSB: 16.7ms
 BREAK_CNT_r = 0     # Right Motor Break Counter for ABS LSB: 16.7ms
+
+LOW_SPD = 0.5       # 50% Speed for Preventing falling-down
+
+Last_Speed_l = 0    # Left Motor Last Cycle Speed from Joystick
+Last_Speed_r = 0    # Right Motor Last Cycle Speed from Joystick
+
+Speed_l = 0         # Left Motor Speed for Control
+Speed_r = 0         # Right Motor Speed for Control
+
+Speed_Masure_Term_cnt = 0  # Both Motor Speed Masure Term Counter
+Speed_Control_Term_cnt = 0 # Both MOtor Speed Control Term COunter
 
 # initialize gpio
 pi = pigpio.pi()
@@ -50,7 +64,8 @@ pi.set_mode(PIN_PWMB, pigpio.OUTPUT)
 def callback(foot):
     global BREAK_CNT_l
     global BREAK_CNT_r
-    
+
+    print"==============="
     print("frame_id = %d" % foot.frame_id)
     print("direction_l = %d" % foot.direction_l)
     print("direction_r = %d" % foot.direction_r)
@@ -58,42 +73,76 @@ def callback(foot):
     print("speed_r = %d" % foot.speed_r)
     print"==============="
 
+    # Speed Control for Preventing falling-down
+    if (foot.speed_l*Last_Speed_l) < 0 and (foot.speed_r*Last_Speed_r) < 0:  # When the Both Motor Speed Reversal
+        Speed_Control_Term_cnt = 1      # Start Counting
+    if Speed_Control_Term_cnt > SPD_CONTROL_TERM: # After 1s
+        Speed_Control_Term_cnt = 0:     # Initialization
+    #Speed Control
+    if Speed_Control_Term_cnt > 0:      # During 1s
+        print"Speed Mode : Half Speed"
+        Speed_l = foot.speed_l * LOW_SPD  # 50% Speed for Preventing falling-down
+        Speed_r = foot.speed_r * LOW_SPD  # 50% Speed for Preventing falling-down             
+    elif Speed_Control_Term_cnt == 0:   # When Normal
+        print"Speed Mode : Normal Speed"
+        Speed_l = foot.speed_l          # Normal Speed
+        Speed_r = foot.speed_r          # Normal Speed
+
     #左モータ
+    print"==============="
     print"Left Motor"
     print"==============="
-    if foot.speed_l > 0:
+    if Speed_l > 0:
         outputDirection(PIN_AIN1, LOW, PIN_AIN2, HIGH)  # Left Motor : CCW
-        outputPwm(PIN_PWMA, foot.speed_l*LEFT_FIGURE)   # 速度
-    elif foot.speed_l < 0:
+        outputPwm(PIN_PWMA, Speed_l*LEFT_FIGURE)   # 速度
+    elif Speed_l < 0:
         outputDirection(PIN_AIN1, HIGH, PIN_AIN2, LOW)  # Left Motor : CW
-        outputPwm(PIN_PWMA, abs(foot.speed_l)*LEFT_FIGURE)  # 速度
-    elif foot.speed_l == 0:
-        if BREAK_CNT_l > 24:            # Over 400ms
+        outputPwm(PIN_PWMA, abs(Speed_l)*LEFT_FIGURE)  # 速度
+    elif Speed_l == 0:                  # added ABS Function
+        if BREAK_CNT_l > 24:            # Over 400.8ms
             BREAK_CNT_l = 0             # Initialization
-        if BREAK_CNT_l <= 12:           # Until 200ms
+        if BREAK_CNT_l > 21:            # During 350.7ms to 400.8ms
+            print"ABS : Lock Mode"
             outputDirection(PIN_AIN1, HIGH, PIN_AIN2, HIGH) # Left Motor : ShortBreak
-        elif BREAK_CNT_l > 12:          # During 216.7ms to 400ms
-            pass
+        elif BREAK_CNT_l <= 21:         # Until 350.7ms
+            print"ABS : AntiLock Mode"
+            pass                        # Antilock for ABS
         BREAK_CNT_l = BREAK_CNT_l + 1   # Counter for ABS + 16.7ms
+    print"==============="
 
     #右モータ
     print"Right Motor"
     print"==============="
-    if foot.speed_r > 0:
+    if Speed_r > 0:
         outputDirection(PIN_BIN1, HIGH, PIN_BIN2, LOW)  # Right Motor : CW
-        outputPwm(PIN_PWMB, foot.speed_r*RIGHT_FIGURE)  # 速度
-    elif foot.speed_r < 0:
+        outputPwm(PIN_PWMB, Speed_r*RIGHT_FIGURE)  # 速度
+    elif Speed_r < 0:
         outputDirection(PIN_BIN1, LOW, PIN_BIN2, HIGH)  # Right Motor : CCW
-        outputPwm(PIN_PWMB, abs(foot.speed_r)*RIGHT_FIGURE) # 速度
-    elif foot.speed_r == 0:
+        outputPwm(PIN_PWMB, abs(Speed_r)*RIGHT_FIGURE) # 速度
+    elif Speed_r == 0:                  # added ABS Function 
         if BREAK_CNT_r > 24:            # Over 400ms
             BREAK_CNT_r = 0             # Initialization
-        if BREAK_CNT_r <= 12:           # Until 200ms
+        if BREAK_CNT_r > 21:            # During 350.7ms to 400.8ms
+            print"ABS : Lock Mode"
             outputDirection(PIN_BIN1, HIGH, PIN_BIN2, HIGH) # Right Motor : ShortBreak
-        elif BREAK_CNT_r > 12:          # During 216.7ms to 400ms
-            pass
+        elif BREAK_CNT_r <= 21:         # Until 350.7ms
+            print"ABS : AntiLock Mode"
+            pass                        # Antilock for ABS
         BREAK_CNT_r = BREAK_CNT_r + 1   # Counter for ABS + 16.7ms
     print"==============="
+
+    if Speed_Masure_Term_cnt == SPD_MASURE_TERM:    # Every 300.6ms
+        # Last Speed Recording for Preventing falling-down when sudden speed changes
+        Last_Speed_l = foot.speed_l
+        Last_Speed_r = foot.speed_r
+        Speed_Masure_Term_cnt = 0       # initialization
+
+    Speed_Masure_Term_cnt = Speed_Masure_Term_cnt + 1 # Counting UP as 16.7ms
+
+    if Speed_Control_Term_cnt > 0:      # When not normal
+        Speed_Control_Term_cnt = Speed_Control_Term_cnt + 1:     # Counting Up
+
+
     #前進
 #    if foot.direction == Direction.AHEAD:
 #        outputDirection(LOW, HIGH, HIGH, LOW)   # Left Motor : CCW, Right Motor : CW
