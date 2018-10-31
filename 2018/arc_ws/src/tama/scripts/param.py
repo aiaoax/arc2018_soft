@@ -21,5 +21,6 @@ class Arm(IntEnum):
     MINUS = 3
 
 class Mode(IntEnum):
-    HERVEST = 1
-    BULB    = 2
+    BOOT    = 1
+    HERVEST = 2
+    BULB    = 3
