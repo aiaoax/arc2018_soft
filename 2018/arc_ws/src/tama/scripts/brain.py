@@ -25,7 +25,7 @@ from param import Mode
 DEBUG = 0
 
 #
-HZ_PUBLISH        = 10  #Pubrishの周期
+HZ_PUBLISH        = 60  #Pubrishの周期
 HZ_MODE           = 5
 SPEED_STEP        = 64
 #
