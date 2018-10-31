@@ -1,0 +1,6 @@
+<launch>
+  <group ns="tama2">
+    <node pkg="tama" name="joyDummy" type="joyDummy.py" output="screen"/>
+    <node pkg="tama" name="brain" type="brain.py" output="screen"/>
+  </group>
+</launch>
