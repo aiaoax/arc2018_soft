@@ -17,17 +17,15 @@ from sensor_msgs.msg import Joy
 # 定数などの定義ファイルimport
 from param import Direction
 from param import Speed
+from param import Wheel
 from param import Arm
 from param import Mode
-
-# RotaryEncoder用
-from rotaryEncoder import RotaryEncoder
 
 # Debug on/off
 DEBUG = 0
 
 #
-HZ_PUBLISH        = 60  #Pubrishの周期
+HZ_PUBLISH        = 10  #Pubrishの周期
 HZ_MODE           = 5
 SPEED_STEP        = 64
 #
@@ -79,15 +77,8 @@ ON  = 1
 OFF = 0 
 
 #
-PIN_ROTARY_A = 5
-PIN_ROTARY_B = 6
-PIN_MICRO_SW = 18#27
-#
-IN_INITIAL = 0
-IN_OPERATE = 1
-
-MAX_ROTATE = 3000
-MIN_ROTATE = 0
+PIN_MICRO_SW_UP =   5#6
+PIN_MICRO_SW_DOWN = 18#27
 
 class Brain(object):
     def __init__(self):
@@ -102,14 +93,10 @@ class Brain(object):
         self.msg_foot = foot()
         # index
         self.frame_id = 0
-        # rotaryencoder
-        self.rotary = RotaryEncoder()
-        self.rotary.setPin(PIN_ROTARY_A,PIN_ROTARY_B)
         # updownの衝突判定用
-        #self.updown = IN_INITIAL
-        self.updown = IN_OPERATE # for debug
         self.pi = pigpio.pi()
-        self.pi.set_mode(PIN_MICRO_SW,pigpio.INPUT)
+        self.pi.set_mode(PIN_MICRO_SW_UP,pigpio.INPUT)
+        self.pi.set_mode(PIN_MICRO_SW_DOWN,pigpio.INPUT)
         #
         self.mode = Mode.HERVEST
         self.strike = False
@@ -131,6 +118,7 @@ class Brain(object):
         self.msg_foot.direction_r = Direction.AHEAD
         self.msg_foot.speed_l     = 0
         self.msg_foot.speed_r     = 0
+        self.msg_foot.speed     = [0,0]
 
     def convertMode(self):
         if self.operation[INDEX_MODE] == 1:
@@ -144,25 +132,14 @@ class Brain(object):
         self.cnt_mode += 1
 
     def convertUpDown(self):
-        # initialize
-        if  self.updown == IN_INITIAL:
-            micro_sw = self.pi.read(PIN_MICRO_SW)
-            if micro_sw == 1 :
-                self.updown = 0
-                self.rotary.setRotate(0)
-            else:
-                self.msg_arm.updown = Arm.PLUS
+        micro_sw_up   = self.pi.read(PIN_MICRO_SW_UP)
+        micro_sw_down = self.pi.read(PIN_MICRO_SW_DOWN)
         # oparating
-        if self.updown == IN_OPERATE:
-            rotate = self.rotary.getRotate()
-            rotate = 1 # for debug
-            if self.operation[INDEX_UP] == 1 and rotate > MIN_ROTATE:  
-                self.msg_arm.updown = Arm.PLUS 
-            elif self.operation[INDEX_DOWN] != 1 and rotate < MAX_ROTATE:  
-                self.msg_arm.updown = Arm.MINUS
+        if self.operation[INDEX_UP] == 1 and micro_sw_up == 1:  
+            self.msg_arm.updown = Arm.PLUS 
+        elif self.operation[INDEX_DOWN] != -1 and micro_sw_down == 1:  
+            self.msg_arm.updown = Arm.MINUS
             
-        #print "rotate " + str(self.rotary.getRotate())
-
     def convertFoot(self):
         # foot
         ## direction
@@ -177,8 +154,10 @@ class Brain(object):
         ## speed
         speed = self.operation[INDEX_SPEED_L]  
         self.msg_foot.speed_l = int(speed*SPEED_STEP*100)/SPEED_STEP
+        self.msg_foot.speed[Wheel.LEFT] = int(speed*SPEED_STEP*100)/SPEED_STEP
         speed = self.operation[INDEX_SPEED_R]  
         self.msg_foot.speed_r = int(speed*SPEED_STEP*100)/SPEED_STEP
+        self.msg_foot.speed[Wheel.RIGHT] = int(speed*SPEED_STEP*100)/SPEED_STEP
        
     def printMsg(self):
         print "UpDown=" + str(self.msg_arm.updown)
@@ -220,16 +199,16 @@ class Brain(object):
     def transmit(self):
         # clear
         self.clearMsg()
-        self.msg_arm.frame_id = self.frame_id;
-        self.msg_foot.frame_id = self.frame_id;
+        self.msg_arm.frame_id = self.frame_id
+        self.msg_foot.frame_id = self.frame_id
         if len(self.operation) > INDEX_MAX:
             self.convert()
         # publishする関数
         self.pub_arm.publish(self.msg_arm)
         self.pub_foot.publish(self.msg_foot)
         self.frame_id+=1
-        print "frame_id" + str(self.msg_foot.frame_id)
-        print "rotate " + str(self.rotary.getRotate())
+
+        #self.printMsg()
 
     def joyCallback(self, joy_msg):
         j = 0
