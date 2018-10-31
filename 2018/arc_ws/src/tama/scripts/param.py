@@ -15,6 +15,10 @@ class Speed(IntEnum):
     MIDDLE = 2
     HIGH   = 3
 
+class Wheel(IntEnum):
+    LEFT  = 0 
+    RIGHT = 1
+
 class Arm(IntEnum):
     PLUS  = 1
     NONE  = 2
