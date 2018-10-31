@@ -1,49 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# pylint: disable=C0103
+# pylint: disable=E1101,C0103,C0325
 """
 アーム
 """
 
 import pigpio
 import rospy
+
 from tama.msg import arm
 from param import Arm
 from param import Mode
 
-
-# defined const
-
-DEBUG = 0
-
-UNKNOWN = 0
-
-# pin number
-PIN_SARVO1 = 4
-PIN_SARVO2 = 14
-PIN_INCW = 15
-PIN_INCCW = 18
-
-#Sarvo PWM
-CW_SARVO1 = 2400
-CW_SARVO2 = 2400
-CCW_SARVO1 = 550
-CCW_SARVO2 = 550
-
-PLUS_SERVO2 = 50
-
-SOFTPWM_W_MAX = 255
-SOFTPWM_W_2_5 = (2/5.0) * SOFTPWM_W_MAX
-SOFTPWM_W_1_3 = (1/3.0) * SOFTPWM_W_MAX
-SOFTPWM_W_OFF = 0
-
-BASE_UP_FIGURE = 1.0
-BASE_DN_FIGURE = 1.0
-
-SOFTPWM_F_20K = (20 * 1000)
-
-HIGH = 1
-LOW = 0
+from arm_consts import\
+                PIN_INCCW, PIN_INCW, PIN_SARVO1, PIN_SARVO2, PLUS_SERVO2,\
+                SOFTPWM_F_20K, SOFTPWM_W_2_5, SOFTPWM_W_OFF,\
+                CCW_SARVO1, CCW_SARVO2, CW_SARVO1, CW_SARVO2,\
+                BASE_DN_FIGURE, BASE_UP_FIGURE,\
+                DEBUG
 
 class ArmClass():
     """
@@ -64,9 +38,9 @@ class ArmClass():
         self.pic.set_PWM_frequency(PIN_INCCW, SOFTPWM_F_20K)
 
         self.tilt_pulse_width = ((CW_SARVO2 + CCW_SARVO2) / 2)
-        self.mode_old = UNKNOWN
+        self.mode_old = Mode.BOOT
 
-        self.modeChange(UNKNOWN)
+        self.modeChange(Mode.BOOT)
 
 
     def callback(self, armmes):
@@ -113,16 +87,16 @@ class ArmClass():
 
             #現在のモードを書き込む
             try:
-                file = open('/usr/local/www/mode.txt', 'w')
+                mode_file = open('/usr/local/www/mode.txt', 'w')
                 tmp_str = "UNKNOWN"
 
                 #モード名を取得
                 tmp_str = Mode(mode).name
 
-                file.write(tmp_str)
+                mode_file.write(tmp_str)
 
             finally:
-                file.close()
+                mode_file.close()
 
             #モード変更時初期化
 
