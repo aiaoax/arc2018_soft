@@ -15,11 +15,16 @@ class Speed(IntEnum):
     MIDDLE = 2
     HIGH   = 3
 
+class Wheel(IntEnum):
+    LEFT  = 0 
+    RIGHT = 1
+
 class Arm(IntEnum):
     PLUS  = 1
     NONE  = 2
     MINUS = 3
 
 class Mode(IntEnum):
-    HERVEST = 1
-    BULB    = 2
+    BOOT    = 1
+    HERVEST = 2
+    BULB    = 3
