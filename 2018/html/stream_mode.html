@@ -1,0 +1,30 @@
+<html>
+<head>
+	<title>MJPG-Streamer - Stream Example</title>
+	<script src="jquery.js"></script>
+	<script>
+		$(function () {
+			loadState();
+			setInterval(function () {
+				loadState();
+			}, 2000);
+		})
+
+		function loadState() {
+			$.ajax({
+				url: 'mode.txt',
+				cache: false,
+				timeout: 1500
+			}).success(function (data) {
+				$('#mode').text(data + '')
+			}).fail(function (XMLHttpRequest, textStatus, errorThrown) {
+				$('#mode').text('error')
+			});
+		}
+	</script>
+</head>
+<body>
+	<img style="align-items:center" src="/?action=stream" />
+	<p id="mode"></p>
+</body>
+</html>
