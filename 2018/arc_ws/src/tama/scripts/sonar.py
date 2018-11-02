@@ -16,6 +16,10 @@ PIN_ECHO = [27,10,11,6]
 HIGH = 1
 LOW  = 0
 
+TIME_WATCH_DOG = 100 # 100msec
+TIME_TRIG_ON = 1/1000*100 # 10us
+SONIC = 340*100/1000*1000 # cm/us
+MAX_DURATION  = (450*2)/SONIC
 TICK_LIMIT = 4294967295
 EDGE_FALLING = 0
 EDGE_RISING  = 1
@@ -47,6 +51,8 @@ class Sonar(object):
             #print "EDGE_RISE " + str(tick) 
             self.time_start = tick
         else :
+            self.resetTrig()
+            self.duration = MAX_DURATION
             print "TIME OUT"
 
     def transmit(self):
@@ -56,7 +62,7 @@ class Sonar(object):
 
     def resetTrig(self) :
         self.pi.write(self.pin_trig,HIGH)
-        time.sleep(1/(1000*100))
+        time.sleep(TIME_TRIG_ON)
         self.pi.write(self.pin_trig,LOW)
         
     def start(self) :
@@ -81,13 +87,14 @@ class Sonar(object):
         self.pi.set_mode(trig,pigpio.OUTPUT)
         self.pi.set_mode(echo,pigpio.INPUT)
         self.pi.write(echo,HIGH)
+        self.pi.set_watchdog(echo,TIME_WATCH_DOG )
         #self.callback_tirg = self.pi.callback(trig,pigpio.EITHER_EDGE,self.callback)
 
     def setRange(self,_range):
         self.range = _range
 
     def getRange(self):
-        self.range = (self.duration * 34300 )/2
+        self.range = (self.duration * SONIC )/2
         return self.range
 
 def sonar_py():
