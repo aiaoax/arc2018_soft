@@ -11,6 +11,7 @@ import pigpio
 # 自分で定義したmessageファイルから生成されたモジュール
 from tama.msg import arm
 from tama.msg import foot 
+from tama.msg import sonar
 # JoyStickControllerからの入力用msg
 from sensor_msgs.msg import Joy
 
@@ -83,7 +84,8 @@ class Brain(object):
     def __init__(self):
         self.operation = []
         # 受信作成
-        self.sub = rospy.Subscriber('joy', Joy, self.joyCallback, queue_size=1)
+        self.sub_joy = rospy.Subscriber('joy', Joy, self.joyCallback, queue_size=1)
+        self.sub_sonar= rospy.Subscriber('sonar', sonar, self.sonarCallback, queue_size=1)
         # 送信作成
         self.pub_arm = rospy.Publisher('arm', arm, queue_size=100)
         self.pub_foot = rospy.Publisher('foot',foot, queue_size=100)
@@ -101,6 +103,8 @@ class Brain(object):
         self.strike = False
         self.grub = False
         self.cnt_mode = 0
+
+        self.range = [sonar(),sonar(),sonar(),sonar()]
 
     def clearMsg(self):
         #arm
@@ -206,21 +210,25 @@ class Brain(object):
 
         #self.printMsg()
 
-    def joyCallback(self, joy_msg):
+    def sonarCallback(self, msg_sonar):
+        self.range[msg_sonar.id] = msg_sonar
+        print "sonarid " + str(self.range[msg_sonar.id].id)
+         
+    def joyCallback(self, msg_joy):
         j = 0
         # ２回以降は代入
         if len(self.operation) > INDEX_MAX:
-            for i,item in enumerate(joy_msg.axes):
+            for i,item in enumerate(msg_joy.axes):
                 self.operation[i] = item
                 j=i
-            for i,item in enumerate(joy_msg.buttons):
+            for i,item in enumerate(msg_joy.buttons):
                 self.operation[j+i] = item
         # 初回は追加
         else:
-            for i,item in enumerate(joy_msg.axes):
+            for i,item in enumerate(msg_joy.axes):
                 self.operation.append(item)
                 j=i
-            for i,item in enumerate(joy_msg.buttons):
+            for i,item in enumerate(msg_joy.buttons):
                 self.operation.append(item)
         # for debug            
         if(DEBUG):
@@ -246,7 +254,7 @@ def brain_py():
 
 if __name__ == '__main__':
     try:
-            brain_py()
+        brain_py()
 
     except rospy.ROSInterruptException: pass
 
