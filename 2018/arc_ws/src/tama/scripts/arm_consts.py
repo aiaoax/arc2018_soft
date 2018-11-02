@@ -1,5 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
-arm.py用定数ファイル
+arm.py 定数ファイル
 """
 # defined const
 
