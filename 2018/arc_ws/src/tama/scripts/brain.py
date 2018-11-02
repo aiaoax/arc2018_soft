@@ -17,7 +17,6 @@ from sensor_msgs.msg import Joy
 # 定数などの定義ファイルimport
 from param import Direction
 from param import Speed
-from param import Wheel
 from param import Arm
 from param import Mode
 
@@ -118,7 +117,6 @@ class Brain(object):
         self.msg_foot.direction_r = Direction.AHEAD
         self.msg_foot.speed_l     = 0
         self.msg_foot.speed_r     = 0
-        self.msg_foot.speed     = [0,0]
 
     def convertMode(self):
         if self.operation[INDEX_MODE] == 1:
@@ -154,10 +152,8 @@ class Brain(object):
         ## speed
         speed = self.operation[INDEX_SPEED_L]  
         self.msg_foot.speed_l = int(speed*SPEED_STEP*100)/SPEED_STEP
-        self.msg_foot.speed[Wheel.LEFT] = int(speed*SPEED_STEP*100)/SPEED_STEP
         speed = self.operation[INDEX_SPEED_R]  
         self.msg_foot.speed_r = int(speed*SPEED_STEP*100)/SPEED_STEP
-        self.msg_foot.speed[Wheel.RIGHT] = int(speed*SPEED_STEP*100)/SPEED_STEP
        
     def printMsg(self):
         print "UpDown=" + str(self.msg_arm.updown)
