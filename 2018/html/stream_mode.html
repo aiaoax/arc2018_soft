@@ -1,20 +1,33 @@
-<html>
+﻿<html>
 <head>
-	<title>MJPG-Streamer - Stream Example</title>
+	<title>MJPG-Streamer</title>
+	<meta charset="utf-8" />
 	<script src="jquery.js"></script>
 	<script>
 		$(function () {
+			drawPicture();
 			loadState();
 			setInterval(function () {
 				loadState();
-			}, 2000);
+			}, 3000);
 		})
+
+		function drawPicture() {
+			var canvas = $('#cnv')[0];
+			if (canvas.getContext) { // 未サポートブラウザでの実行を抑止
+				var cv2d = canvas.getContext('2d');
+				cv2d.strokeStyle = 'rgb(255,0,0)'; // 赤
+				cv2d.strokeRect(160, 100, 20, 20);
+
+
+			}
+		}
 
 		function loadState() {
 			$.ajax({
 				url: 'mode.txt',
 				cache: false,
-				timeout: 1500
+				timeout: 2000
 			}).success(function (data) {
 				$('#mode').text(data + '')
 			}).fail(function (XMLHttpRequest, textStatus, errorThrown) {
@@ -22,9 +35,21 @@
 			});
 		}
 	</script>
+	<style>
+		div.img {
+			width: 320px;
+			height: 240px;
+			position: center;
+		}
+	</style>
 </head>
 <body>
-	<img style="align-items:center" src="/?action=stream" />
-	<p id="mode"></p>
+	<p id="mode" style="position: relative"></p>
+	<div id="img" style="position: relative">
+		<img style="position: absolute; top: 0px; left: 0px;" src="/?action=stream" />
+		<canvas style="position: absolute; top: 0px; left: 0px;" id="cnv"></canvas>
+	</div>
+	<textarea id="cmdtxt"></textarea>
+	<button type="button" value="反映" />
 </body>
 </html>
