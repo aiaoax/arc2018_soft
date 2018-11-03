@@ -3,8 +3,5 @@
     <node pkg="tama" name="joyDummy" type="joyDummy.py"/>
     <node pkg="tama" name="brain" type="brain.py" output="screen" />
     <node pkg="tama" name="sonar0" type="sonar.py" args="0" output="screen"/>
-    <node pkg="tama" name="sonar1" type="sonar.py" args="1" output="screen"/>
-    <node pkg="tama" name="sonar2" type="sonar.py" args="2" output="screen"/>
-    <node pkg="tama" name="sonar3" type="sonar.py" args="3" output="screen"/>
   </group>
 </launch>

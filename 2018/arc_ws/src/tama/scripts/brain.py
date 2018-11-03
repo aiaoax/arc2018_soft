@@ -11,13 +11,13 @@ import pigpio
 # 自分で定義したmessageファイルから生成されたモジュール
 from tama.msg import arm
 from tama.msg import foot 
+from tama.msg import sonar
 # JoyStickControllerからの入力用msg
 from sensor_msgs.msg import Joy
 
 # 定数などの定義ファイルimport
 from param import Direction
 from param import Speed
-from param import Wheel
 from param import Arm
 from param import Mode
 
@@ -84,7 +84,8 @@ class Brain(object):
     def __init__(self):
         self.operation = []
         # 受信作成
-        self.sub = rospy.Subscriber('joy', Joy, self.joyCallback, queue_size=1)
+        self.sub_joy = rospy.Subscriber('joy', Joy, self.joyCallback, queue_size=1)
+        self.sub_sonar= rospy.Subscriber('sonar', sonar, self.sonarCallback, queue_size=1)
         # 送信作成
         self.pub_arm = rospy.Publisher('arm', arm, queue_size=100)
         self.pub_foot = rospy.Publisher('foot',foot, queue_size=100)
@@ -103,6 +104,8 @@ class Brain(object):
         self.grub = False
         self.cnt_mode = 0
 
+        self.range = [sonar(),sonar(),sonar(),sonar()]
+
     def clearMsg(self):
         #arm
         self.msg_arm.strike = False
@@ -118,7 +121,6 @@ class Brain(object):
         self.msg_foot.direction_r = Direction.AHEAD
         self.msg_foot.speed_l     = 0
         self.msg_foot.speed_r     = 0
-        self.msg_foot.speed     = [0,0]
 
     def convertMode(self):
         if self.operation[INDEX_MODE] == 1:
@@ -154,10 +156,8 @@ class Brain(object):
         ## speed
         speed = self.operation[INDEX_SPEED_L]  
         self.msg_foot.speed_l = int(speed*SPEED_STEP*100)/SPEED_STEP
-        self.msg_foot.speed[Wheel.LEFT] = int(speed*SPEED_STEP*100)/SPEED_STEP
         speed = self.operation[INDEX_SPEED_R]  
         self.msg_foot.speed_r = int(speed*SPEED_STEP*100)/SPEED_STEP
-        self.msg_foot.speed[Wheel.RIGHT] = int(speed*SPEED_STEP*100)/SPEED_STEP
        
     def printMsg(self):
         print "UpDown=" + str(self.msg_arm.updown)
@@ -210,21 +210,25 @@ class Brain(object):
 
         #self.printMsg()
 
-    def joyCallback(self, joy_msg):
+    def sonarCallback(self, msg_sonar):
+        self.range[msg_sonar.id] = msg_sonar
+        print "sonarid " + str(self.range[msg_sonar.id].id)
+         
+    def joyCallback(self, msg_joy):
         j = 0
         # ２回以降は代入
         if len(self.operation) > INDEX_MAX:
-            for i,item in enumerate(joy_msg.axes):
+            for i,item in enumerate(msg_joy.axes):
                 self.operation[i] = item
                 j=i
-            for i,item in enumerate(joy_msg.buttons):
+            for i,item in enumerate(msg_joy.buttons):
                 self.operation[j+i] = item
         # 初回は追加
         else:
-            for i,item in enumerate(joy_msg.axes):
+            for i,item in enumerate(msg_joy.axes):
                 self.operation.append(item)
                 j=i
-            for i,item in enumerate(joy_msg.buttons):
+            for i,item in enumerate(msg_joy.buttons):
                 self.operation.append(item)
         # for debug            
         if(DEBUG):
@@ -250,7 +254,7 @@ def brain_py():
 
 if __name__ == '__main__':
     try:
-            brain_py()
+        brain_py()
 
     except rospy.ROSInterruptException: pass
 
